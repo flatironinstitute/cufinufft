@@ -49,7 +49,8 @@ int main(int argc, char* argv[])
 
 	int ns=std::ceil(-log10(tol/10.0));
 	cufinufft_plan dplan;
-
+        nufft_opts opts;
+        dplan.opts = &opts;
 	int dim=2;
 	ier = cufinufft_default_opts(type2, dim, dplan.opts);
 	if(ier != 0 ){
@@ -57,7 +58,7 @@ int main(int argc, char* argv[])
 		return 0;
 	}
 	ier = setup_spreader_for_nufft(dplan.spopts, tol, dplan.opts);
-	dplan.opts.gpu_method=method;
+	dplan.opts->gpu_method=method;
 	dplan.spopts.pirange=0;
 	cout<<scientific<<setprecision(3);
 
@@ -69,7 +70,7 @@ int main(int argc, char* argv[])
 	cudaMallocHost(&c, M*sizeof(CPX));
 	cudaMallocHost(&fw,nf1*nf2*sizeof(CPX));
 
-	dplan.opts.gpu_kerevalmeth=kerevalmeth;
+	dplan.opts->gpu_kerevalmeth=kerevalmeth;
 	switch(nupts_distribute){
 		// Making data
 		case 1: //uniform
@@ -114,7 +115,7 @@ int main(int argc, char* argv[])
 	}
 	FLT t=timer.elapsedsec();
 	printf("[Method %d] %ld U pts to #%d NU pts in %.3g s (\t%.3g U pts/s)\n",
-			dplan.opts.gpu_method,nf1*nf2,M,t,nf1*nf2/t);
+			dplan.opts->gpu_method,nf1*nf2,M,t,nf1*nf2/t);
 #if 0
 	cout<<"[result-input]"<<endl;
 	for(int j=0; j<M; j++){

@@ -58,7 +58,7 @@ int cufinufft3d1_exec(CUCPX* d_c, CUCPX* d_fk, cufinufft_plan *d_plan)
 		cudaEventRecord(start);
 		ier = cuspread3d(d_plan, blksize);
 		if(ier != 0 ){
-			printf("error: cuspread3d, method(%d)\n", d_plan->opts.gpu_method);
+			printf("error: cuspread3d, method(%d)\n", d_plan->opts->gpu_method);
 			return 0;
 		}
 #ifdef TIME
@@ -66,7 +66,7 @@ int cufinufft3d1_exec(CUCPX* d_c, CUCPX* d_fk, cufinufft_plan *d_plan)
 		cudaEventSynchronize(stop);
 		cudaEventElapsedTime(&milliseconds, start, stop);
 		printf("[time  ] \tSpread (%d)\t\t %.3g s\n", milliseconds/1000, 
-			d_plan->opts.gpu_method);
+			d_plan->opts->gpu_method);
 #endif
 		// Step 2: FFT
 		cudaEventRecord(start);
@@ -148,7 +148,7 @@ int cufinufft3d2_exec(CUCPX* d_c, CUCPX* d_fk, cufinufft_plan *d_plan)
 		cudaEventRecord(start);
 		ier = cuinterp3d(d_plan, blksize);
 		if(ier != 0 ){
-			printf("error: cuinterp3d, method(%d)\n", d_plan->opts.gpu_method);
+			printf("error: cuinterp3d, method(%d)\n", d_plan->opts->gpu_method);
 			return 0;
 		}
 #ifdef TIME
@@ -156,7 +156,7 @@ int cufinufft3d2_exec(CUCPX* d_c, CUCPX* d_fk, cufinufft_plan *d_plan)
 		cudaEventSynchronize(stop);
 		cudaEventElapsedTime(&milliseconds, start, stop);
 		printf("[time  ] \tUnspread (%d)\t\t %.3g s\n", milliseconds/1000,
-			d_plan->opts.gpu_method);
+			d_plan->opts->gpu_method);
 #endif
 
 		cudaEventRecord(start);
@@ -179,9 +179,9 @@ int cufinufft3d_plan(int M, int ms, int mt, int mu, int ntransf,
 
 	int ier;
 	//ier=cufinufft_default_opts(opts,eps,upsampfac);
-	int nf1 = (int) d_plan->opts.gpu_upsampfac*ms;
-	int nf2 = (int) d_plan->opts.gpu_upsampfac*mt;
-	int nf3 = (int) d_plan->opts.gpu_upsampfac*mu;
+	int nf1 = (int) d_plan->opts->gpu_upsampfac*ms;
+	int nf2 = (int) d_plan->opts->gpu_upsampfac*mt;
+	int nf3 = (int) d_plan->opts->gpu_upsampfac*mu;
 	int fftsign = (iflag>=0) ? 1 : -1;
 
 	d_plan->ms = ms;
@@ -209,7 +209,7 @@ int cufinufft3d_plan(int M, int ms, int mt, int mu, int ntransf,
 	onedim_fseries_kernel(nf2, fwkerhalf2, opts);
 	onedim_fseries_kernel(nf3, fwkerhalf3, opts);
 #ifdef DEBUG
-	printf("[time  ] \tkernel fser (ns=%d):\t %.3g s\n", d_plan->opts.gpu_nspread,timer.elapsedsec());
+	printf("[time  ] \tkernel fser (ns=%d):\t %.3g s\n", d_plan->opts->gpu_nspread,timer.elapsedsec());
 #endif
 
 	cudaEventRecord(start);
@@ -278,11 +278,11 @@ int cufinufft3d_setNUpts(FLT* h_kx, FLT* h_ky, FLT *h_kz, cufinufft_opts &opts, 
 	printf("[time  ] \tCopy kx,ky,kz HtoD\t %.3g s\n", milliseconds/1000);
 #endif
 
-	if(d_plan->opts.gpu_pirange==1){
+	if(d_plan->opts->gpu_pirange==1){
 		cudaEventRecord(start);
 		RescaleXY_3d<<<(M+1024-1)/1024, 1024>>>(M,nf1,nf2,nf3,d_plan->kx,
 			d_plan->ky,d_plan->kz);
-		d_plan->opts.gpu_pirange=0;
+		d_plan->opts->gpu_pirange=0;
 #ifdef SPREADTIME
 		float milliseconds;
 		cudaEventRecord(stop);
@@ -293,17 +293,17 @@ int cufinufft3d_setNUpts(FLT* h_kx, FLT* h_ky, FLT *h_kz, cufinufft_opts &opts, 
 	}
 
 	cudaEventRecord(start);
-	if(d_plan->opts.gpu_method == 5){
+	if(d_plan->opts->gpu_method == 5){
 		int ier = cuspread3d_subprob_prop(nf1,nf2,nf3,M,opts,d_plan);
 		if(ier != 0 ){
-			printf("error: cuspread3d_subprob_prop, method(%d)\n", d_plan->opts.gpu_method);
+			printf("error: cuspread3d_subprob_prop, method(%d)\n", d_plan->opts->gpu_method);
 			return 0;
 		}
 	}
-	if(d_plan->opts.gpu_method == 1 || d_plan->opts.gpu_method ==  2 || d_plan->opts.gpu_method == 3){
+	if(d_plan->opts->gpu_method == 1 || d_plan->opts->gpu_method ==  2 || d_plan->opts->gpu_method == 3){
 		int ier = cuspread3d_blockgather_prop(nf1,nf2,nf3,M,opts,d_plan);
 		if(ier != 0 ){
-			printf("error: cuspread3d_blockgather_prop, method(%d)\n", d_plan->opts.gpu_method);
+			printf("error: cuspread3d_blockgather_prop, method(%d)\n", d_plan->opts->gpu_method);
 			return 0;
 		}
 	}

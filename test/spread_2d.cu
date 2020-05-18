@@ -56,16 +56,18 @@ int main(int argc, char* argv[])
 	int dim=2;
 	int ns=std::ceil(-log10(tol/10.0));
 	cufinufft_plan dplan;
+        nufft_opts opts;
+        dplan.opts = &opts;
 	ier = cufinufft_default_opts(type1, dim, dplan.opts);
 	if(ier != 0 ){
 		cout<<"error: cufinufft_default_opts"<<endl;
 		return 0;
 	}
 	ier = setup_spreader_for_nufft(dplan.spopts, tol, dplan.opts);
-	dplan.opts.gpu_method=method;
-	dplan.opts.upsampfac=upsampfac;
-	dplan.opts.gpu_maxsubprobsize=maxsubprobsize;
-	dplan.opts.gpu_kerevalmeth=kerevalmeth;
+	dplan.opts->gpu_method=method;
+	dplan.opts->upsampfac=upsampfac;
+	dplan.opts->gpu_maxsubprobsize=maxsubprobsize;
+	dplan.opts->gpu_kerevalmeth=kerevalmeth;
 	dplan.spopts.pirange=0;
 
 	cout<<scientific<<setprecision(3);
@@ -127,14 +129,14 @@ int main(int argc, char* argv[])
 	}
 	FLT t=timer.elapsedsec();
 	printf("[Method %d] %ld NU pts to #%d U pts in %.3g s (%.3g NU pts/s)\n",
-			dplan.opts.gpu_method,M,nf1*nf2,t,M/t);
+			dplan.opts->gpu_method,M,nf1*nf2,t,M/t);
 #if 0
 	cout<<"[result-input]"<<endl;
 	for(int j=0; j<nf2; j++){
-		if( j % dplan.opts.gpu_binsizey == 0)
+		if( j % dplan.opts->gpu_binsizey == 0)
 			printf("\n");
 		for (int i=0; i<nf1; i++){
-			if( i % dplan.opts.gpu_binsizex == 0 && i!=0)
+			if( i % dplan.opts->gpu_binsizex == 0 && i!=0)
 				printf(" |");
 			printf(" (%2.3g,%2.3g)",fw[i+j*nf1].real(),fw[i+j*nf1].imag() );
 		}

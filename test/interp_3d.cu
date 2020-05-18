@@ -97,6 +97,8 @@ int main(int argc, char* argv[])
 
 	int dim=3;
 	cufinufft_plan dplan;
+        nufft_opts opts;
+        dplan.opts = &opts;
 	ier = cufinufft_default_opts(type2, dim, dplan.opts);
 	if(ier != 0 ){
 		cout<<"error: cufinufft_default_opts"<<endl;
@@ -104,23 +106,23 @@ int main(int argc, char* argv[])
 	}
 	ier = setup_spreader_for_nufft(dplan.spopts, tol, dplan.opts);
 
-	dplan.opts.upsampfac=sigma;
-	dplan.opts.gpu_method=method;
-	dplan.opts.gpu_kerevalmeth=1;
-	dplan.opts.gpu_sort=sort;
+	dplan.opts->upsampfac=sigma;
+	dplan.opts->gpu_method=method;
+	dplan.opts->gpu_kerevalmeth=1;
+	dplan.opts->gpu_sort=sort;
 	dplan.spopts.pirange=0;
-	if(dplan.opts.gpu_method == 2)
+	if(dplan.opts->gpu_method == 2)
 	{
-		dplan.opts.gpu_binsizex=16;
-		dplan.opts.gpu_binsizey=16;
-		dplan.opts.gpu_binsizez=2;
-		dplan.opts.gpu_maxsubprobsize=maxsubprobsize;
+		dplan.opts->gpu_binsizex=16;
+		dplan.opts->gpu_binsizey=16;
+		dplan.opts->gpu_binsizez=2;
+		dplan.opts->gpu_maxsubprobsize=maxsubprobsize;
 	}
-	if(dplan.opts.gpu_method == 1)
+	if(dplan.opts->gpu_method == 1)
 	{
-		dplan.opts.gpu_binsizex=16;
-		dplan.opts.gpu_binsizey=8;
-		dplan.opts.gpu_binsizez=4;
+		dplan.opts->gpu_binsizex=16;
+		dplan.opts->gpu_binsizey=8;
+		dplan.opts->gpu_binsizez=4;
 	}
 
 	CNTime timer;
@@ -145,7 +147,7 @@ int main(int argc, char* argv[])
 	}
 	FLT t=timer.elapsedsec();
 	printf("[Method %d] %ld U pts to #%d NU pts in %.3g s (\t%.3g U pts/s)\n",
-			dplan.opts.gpu_method,nf1*nf2*nf3,M,t,M/t);
+			dplan.opts->gpu_method,nf1*nf2*nf3,M,t,M/t);
 #ifdef RESULT
 	cout<<"[result-input]"<<endl;
 	for(int j=0; j<10; j++){

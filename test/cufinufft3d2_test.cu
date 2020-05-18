@@ -98,13 +98,15 @@ int main(int argc, char* argv[])
 #endif
 
 	cufinufft_plan dplan;
+        nufft_opts opts;
+        dplan.opts = &opts;
 	int dim = 3;
 	ier=cufinufft_default_opts(type2, dim, dplan.opts);
-	dplan.opts.gpu_method=method;
-	dplan.opts.gpu_binsizex = 16;
-	dplan.opts.gpu_binsizey = 16;
-	dplan.opts.gpu_binsizez = 2;
-	dplan.opts.gpu_maxsubprobsize = 1024;
+	dplan.opts->gpu_method=method;
+	dplan.opts->gpu_binsizex = 16;
+	dplan.opts->gpu_binsizey = 16;
+	dplan.opts->gpu_binsizez = 2;
+	dplan.opts->gpu_maxsubprobsize = 1024;
 
 	int nmodes[3];
 	int ntransf = 1;
@@ -170,7 +172,7 @@ int main(int argc, char* argv[])
 	checkCudaErrors(cudaMemcpy(c,d_c,M*sizeof(CUCPX),cudaMemcpyDeviceToHost));
 	
 	printf("[Method %d] %ld NU pts to #%d U pts in %.3g s (\t%.3g NU pts/s)\n",
-			dplan.opts.gpu_method,M,N1*N2*N3,totaltime/1000,M/totaltime*1000);
+			dplan.opts->gpu_method,M,N1*N2*N3,totaltime/1000,M/totaltime*1000);
 #if 1
 	int jt = M/2;          // check arbitrary choice of one targ pt
 	CPX J = IMA*(FLT)iflag;

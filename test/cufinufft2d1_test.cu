@@ -88,9 +88,10 @@ int main(int argc, char* argv[])
 
 	cufinufft_plan dplan;
 	int dim = 2;
-
+        nufft_opts opts;
+        dplan.opts = &opts;
 	ier=cufinufft_default_opts(type1, dim, dplan.opts);
-	dplan.opts.gpu_method=method;
+	dplan.opts->gpu_method=method;
 
 	int nmodes[3];
 	int ntransf = 1;
@@ -146,7 +147,7 @@ int main(int argc, char* argv[])
 		cudaMemcpyDeviceToHost));
 
 	printf("[Method %d] %ld NU pts to #%d U pts in %.3g s (\t%.3g NU pts/s)\n",
-			dplan.opts.gpu_method,M,N1*N2,totaltime/1000,M/totaltime*1000);
+			dplan.opts->gpu_method,M,N1*N2,totaltime/1000,M/totaltime*1000);
 
 	int nt1 = (int)(0.37*N1), nt2 = (int)(0.26*N2);  // choose some mode index to check
 	CPX Ft = CPX(0,0), J = IMA*(FLT)iflag;

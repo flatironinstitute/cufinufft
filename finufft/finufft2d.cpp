@@ -8,7 +8,7 @@
 #include <iomanip>
 
 int finufft2d1(BIGINT nj,FLT* xj,FLT *yj,CPX* cj,int iflag,
-	       FLT eps, BIGINT ms, BIGINT mt, CPX* fk, nufft_opts opts)
+	       FLT eps, BIGINT ms, BIGINT mt, CPX* fk, nufft_opts* opts)
  /*  Type-1 2D complex nonuniform FFT.
 
                   nj-1
@@ -60,7 +60,7 @@ int finufft2d1(BIGINT nj,FLT* xj,FLT *yj,CPX* cj,int iflag,
   }
   cout << scientific << setprecision(15);  // for debug
 
-  if (opts.debug) printf("2d1: (ms,mt)=(%ld,%ld) (nf1,nf2)=(%ld,%ld) nj=%ld ...\n",(int64_t)ms,(int64_t)mt,(int64_t)nf1,(int64_t)nf2,(int64_t)nj);
+  if (opts->debug) printf("2d1: (ms,mt)=(%ld,%ld) (nf1,nf2)=(%ld,%ld) nj=%ld ...\n",(int64_t)ms,(int64_t)mt,(int64_t)nf1,(int64_t)nf2,(int64_t)nj);
 
   // STEP 0: get Fourier coeffs of spread kernel in each dim:
   CNTime timer; timer.start();
@@ -68,7 +68,7 @@ int finufft2d1(BIGINT nj,FLT* xj,FLT *yj,CPX* cj,int iflag,
   FLT *fwkerhalf2 = (FLT*)malloc(sizeof(FLT)*(nf2/2+1));
   onedim_fseries_kernel(nf1, fwkerhalf1, spopts);
   onedim_fseries_kernel(nf2, fwkerhalf2, spopts);
-  if (opts.debug) printf("kernel fser (ns=%d):\t %.3g s\n", spopts.nspread,timer.elapsedsec());
+  if (opts->debug) printf("kernel fser (ns=%d):\t %.3g s\n", spopts.nspread,timer.elapsedsec());
 
   int nth = MY_OMP_GET_MAX_THREADS();
   if (nth>1) {             // set up multithreaded fftw stuff...
@@ -78,37 +78,37 @@ int finufft2d1(BIGINT nj,FLT* xj,FLT *yj,CPX* cj,int iflag,
   timer.restart();
   FFTW_CPX *fw = FFTW_ALLOC_CPX(nf1*nf2);  // working upsampled array
   int fftsign = (iflag>=0) ? 1 : -1;
-  FFTW_PLAN p = FFTW_PLAN_2D(nf2,nf1,fw,fw,fftsign, opts.fftw);  // in-place
-  if (opts.debug) printf("fftw plan (%d)    \t %.3g s\n",opts.fftw,timer.elapsedsec());
+  FFTW_PLAN p = FFTW_PLAN_2D(nf2,nf1,fw,fw,fftsign, opts->fftw);  // in-place
+  if (opts->debug) printf("fftw plan (%d)    \t %.3g s\n",opts->fftw,timer.elapsedsec());
 
   // Step 1: spread from irregular points to regular grid
   timer.restart();
   spopts.spread_direction = 1;
   FLT *dummy=NULL;
   int ier_spread = spreadinterp(nf1,nf2,1,(FLT*)fw,nj,xj,yj,dummy,(FLT*)cj,spopts);
-  if (opts.debug) printf("spread (ier=%d):\t\t %.3g s\n",ier_spread,timer.elapsedsec());
+  if (opts->debug) printf("spread (ier=%d):\t\t %.3g s\n",ier_spread,timer.elapsedsec());
   if (ier_spread>0) return ier_spread;
 
   // Step 2:  Call FFT
   timer.restart();
   FFTW_EX(p);
   FFTW_DE(p);
-  if (opts.debug) printf("fft (%d threads):\t %.3g s\n", nth, timer.elapsedsec());
+  if (opts->debug) printf("fft (%d threads):\t %.3g s\n", nth, timer.elapsedsec());
 
   // Step 3: Deconvolve by dividing coeffs by that of kernel; shuffle to output
   timer.restart();
-  deconvolveshuffle2d(1,1.0,fwkerhalf1,fwkerhalf2,ms,mt,(FLT*)fk,nf1,nf2,fw,opts.modeord);
-  if (opts.debug) printf("deconvolve & copy out:\t %.3g s\n", timer.elapsedsec());
+  deconvolveshuffle2d(1,1.0,fwkerhalf1,fwkerhalf2,ms,mt,(FLT*)fk,nf1,nf2,fw,opts->modeord);
+  if (opts->debug) printf("deconvolve & copy out:\t %.3g s\n", timer.elapsedsec());
 
   FFTW_FR(fw); free(fwkerhalf1); free(fwkerhalf2);
-  if (opts.debug) printf("freed\n");
+  if (opts->debug) printf("freed\n");
   return 0;
 }
 
 
 int finufft2d1many(int ndata, BIGINT nj, FLT* xj, FLT *yj, CPX* c,
 		   int iflag, FLT eps, BIGINT ms, BIGINT mt, CPX* fk,
-		   nufft_opts opts)
+		   nufft_opts* opts)
 /*
   Type-1 2D complex nonuniform FFT for multiple strength vectors, same NU pts.
 
@@ -158,7 +158,7 @@ int finufft2d1many(int ndata, BIGINT nj, FLT* xj, FLT *yj, CPX* c,
   }
   cout << scientific << setprecision(15);  // for debug
 
-  if (opts.debug) printf("2d1many: ndata=%d (ms,mt)=(%ld,%ld) (nf1,nf2)=(%ld,%ld) nj=%ld ...\n",
+  if (opts->debug) printf("2d1many: ndata=%d (ms,mt)=(%ld,%ld) (nf1,nf2)=(%ld,%ld) nj=%ld ...\n",
                          ndata,(int64_t)ms,(int64_t)mt,nf1,nf2,(int64_t)nj);
 
   // STEP 0: get Fourier coeffs of spread kernel in each dim:
@@ -167,7 +167,7 @@ int finufft2d1many(int ndata, BIGINT nj, FLT* xj, FLT *yj, CPX* c,
   FLT *fwkerhalf2 = (FLT*)malloc(sizeof(FLT)*(nf2/2+1));
   onedim_fseries_kernel(nf1, fwkerhalf1, spopts);
   onedim_fseries_kernel(nf2, fwkerhalf2, spopts);
-  if (opts.debug) printf("kernel fser (ns=%d):\t %.3g s\n", spopts.nspread,timer.elapsedsec());
+  if (opts->debug) printf("kernel fser (ns=%d):\t %.3g s\n", spopts.nspread,timer.elapsedsec());
 
   int nth = MY_OMP_GET_MAX_THREADS();
   if (nth>1) {             // set up multithreaded fftw stuff...
@@ -182,24 +182,24 @@ int finufft2d1many(int ndata, BIGINT nj, FLT* xj, FLT *yj, CPX* c,
 
   timer.restart();
   FFTW_PLAN p = FFTW_PLAN_MANY_DFT(2, n, nth, fw, n, 1, n[0]*n[1], fw, n, 1,
-                                   n[0]*n[1], fftsign, opts.fftw);
-  if (opts.debug) printf("fftw plan (%d)    \t %.3g s\n",opts.fftw,timer.elapsedsec());
+                                   n[0]*n[1], fftsign, opts->fftw);
+  if (opts->debug) printf("fftw plan (%d)    \t %.3g s\n",opts->fftw,timer.elapsedsec());
 
-  spopts.debug = opts.spread_debug;
-  spopts.sort = opts.spread_sort;
+  spopts.debug = opts->spread_debug;
+  spopts.sort = opts->spread_sort;
   spopts.spread_direction = 1;
   spopts.pirange = 1; FLT *dummy=NULL;
-  spopts.chkbnds = opts.chkbnds;
+  spopts.chkbnds = opts->chkbnds;
 
   int ier_check = spreadcheck(nf1,nf2,1,nj,xj,yj,dummy,spopts);
   if (ier_check>0) return ier_check;
-  
+
   timer.restart();          // sort
   BIGINT *sort_indices = (BIGINT*)malloc(sizeof(BIGINT)*nj);
   int did_sort = spreadsort(sort_indices,nf1,nf2,1,nj,xj,yj,dummy,spopts);
-  if (opts.debug) printf("[many] sort (did_sort=%d):\t %.3g s\n", did_sort,
+  if (opts->debug) printf("[many] sort (did_sort=%d):\t %.3g s\n", did_sort,
 			 timer.elapsedsec());
-  
+
   double time_fft = 0.0, time_spread = 0.0, time_deconv = 0.0;
   // since can't return within omp block, need this array to catch errors...
   int *ier_spreads = (int*)calloc(nth,sizeof(int));
@@ -208,9 +208,9 @@ int finufft2d1many(int ndata, BIGINT nj, FLT* xj, FLT *yj, CPX* c,
   // make sure only single threaded spreadinterp used for each data...
   MY_OMP_SET_NESTED(0);       // note this doesn't change omp_get_max_nthreads()
 #endif
-  
+
   for (int j = 0; j*nth < ndata; ++j) { // main loop over data blocks of size nth
-    
+
     // Step 1: spread from irregular points to regular grid
     timer.restart();
     int blksize = min(ndata-j*nth,nth); // size of this block
@@ -240,26 +240,26 @@ int finufft2d1many(int ndata, BIGINT nj, FLT* xj, FLT *yj, CPX* c,
       FFTW_CPX *fwstart = fw + i*nf1*nf2;    // this thr input
       CPX *fkstart = fk + (i+j*nth)*ms*mt;   // this thr output
       deconvolveshuffle2d(1,1.0,fwkerhalf1,fwkerhalf2,ms,mt,(FLT*)fkstart,nf1,
-			  nf2,fwstart,opts.modeord);
+			  nf2,fwstart,opts->modeord);
     }
     time_deconv += timer.elapsedsec();
   }
 
-  if (opts.debug) printf("[many] spread:\t\t\t %.3g s\n", time_spread);
-  if (opts.debug) printf("[many] fft (%d threads):\t\t %.3g s\n", nth, time_fft);
-  if (opts.debug) printf("[many] deconvolve & copy out:\t %.3g s\n", time_deconv);
+  if (opts->debug) printf("[many] spread:\t\t\t %.3g s\n", time_spread);
+  if (opts->debug) printf("[many] fft (%d threads):\t\t %.3g s\n", nth, time_fft);
+  if (opts->debug) printf("[many] deconvolve & copy out:\t %.3g s\n", time_deconv);
   //  if (opts.debug) printf("[many] total execute time (exclude fftw_plan, etc.) %.3g s\n", time_spread+time_fft+time_deconv);
 
   FFTW_DE(p);
   FFTW_FR(fw); free(fwkerhalf1); free(fwkerhalf2); free(sort_indices);
   free(ier_spreads);
-  if (opts.debug) printf("freed\n");
+  if (opts->debug) printf("freed\n");
   return 0;
 }
 
 
 int finufft2d2(BIGINT nj,FLT* xj,FLT *yj,CPX* cj,int iflag,FLT eps,
-	       BIGINT ms, BIGINT mt, CPX* fk, nufft_opts opts)
+	       BIGINT ms, BIGINT mt, CPX* fk, nufft_opts* opts)
 
  /*  Type-2 2D complex nonuniform FFT.
 
@@ -304,7 +304,7 @@ int finufft2d2(BIGINT nj,FLT* xj,FLT *yj,CPX* cj,int iflag,FLT eps,
   }
   cout << scientific << setprecision(15);  // for debug
 
-  if (opts.debug) printf("2d2: (ms,mt)=(%ld,%ld) (nf1,nf2)=(%ld,%ld) nj=%ld ...\n",(int64_t)ms,(int64_t)mt,(int64_t)nf1,(int64_t)nf2,(int64_t)nj);
+  if (opts->debug) printf("2d2: (ms,mt)=(%ld,%ld) (nf1,nf2)=(%ld,%ld) nj=%ld ...\n",(int64_t)ms,(int64_t)mt,(int64_t)nf1,(int64_t)nf2,(int64_t)nj);
 
   // STEP 0: get Fourier coeffs of spread kernel in each dim:
   CNTime timer; timer.start();
@@ -312,7 +312,7 @@ int finufft2d2(BIGINT nj,FLT* xj,FLT *yj,CPX* cj,int iflag,FLT eps,
   FLT *fwkerhalf2 = (FLT*)malloc(sizeof(FLT)*(nf2/2+1));
   onedim_fseries_kernel(nf1, fwkerhalf1, spopts);
   onedim_fseries_kernel(nf2, fwkerhalf2, spopts);
-  if (opts.debug) printf("kernel fser (ns=%d):\t %.3g s\n", spopts.nspread,timer.elapsedsec());
+  if (opts->debug) printf("kernel fser (ns=%d):\t %.3g s\n", spopts.nspread,timer.elapsedsec());
 
   int nth = MY_OMP_GET_MAX_THREADS();
   if (nth>1) {             // set up multithreaded fftw stuff...
@@ -322,37 +322,37 @@ int finufft2d2(BIGINT nj,FLT* xj,FLT *yj,CPX* cj,int iflag,FLT eps,
   timer.restart();
   FFTW_CPX *fw = FFTW_ALLOC_CPX(nf1*nf2);  // working upsampled array
   int fftsign = (iflag>=0) ? 1 : -1;
-  FFTW_PLAN p = FFTW_PLAN_2D(nf2,nf1,fw,fw,fftsign, opts.fftw);  // in-place
-  if (opts.debug) printf("fftw plan (%d)    \t %.3g s\n",opts.fftw,timer.elapsedsec());
+  FFTW_PLAN p = FFTW_PLAN_2D(nf2,nf1,fw,fw,fftsign, opts->fftw);  // in-place
+  if (opts->debug) printf("fftw plan (%d)    \t %.3g s\n",opts->fftw,timer.elapsedsec());
 
   // STEP 1: amplify Fourier coeffs fk and copy into upsampled array fw
   timer.restart();
-  deconvolveshuffle2d(2,1.0,fwkerhalf1,fwkerhalf2,ms,mt,(FLT*)fk,nf1,nf2,fw,opts.modeord);
-  if (opts.debug) printf("amplify & copy in:\t %.3g s\n",timer.elapsedsec());
+  deconvolveshuffle2d(2,1.0,fwkerhalf1,fwkerhalf2,ms,mt,(FLT*)fk,nf1,nf2,fw,opts->modeord);
+  if (opts->debug) printf("amplify & copy in:\t %.3g s\n",timer.elapsedsec());
   //cout<<"fw:\n"; for (int j=0;j<nf1*nf2;++j) cout<<fw[j][0]<<"\t"<<fw[j][1]<<endl;
 
   // Step 2:  Call FFT
   timer.restart();
   FFTW_EX(p);
   FFTW_DE(p);
-  if (opts.debug) printf("fft (%d threads):\t %.3g s\n",nth,timer.elapsedsec());
+  if (opts->debug) printf("fft (%d threads):\t %.3g s\n",nth,timer.elapsedsec());
 
   // Step 3: unspread (interpolate) from regular to irregular target pts
   timer.restart();
   spopts.spread_direction = 2;
   FLT *dummy=NULL;
   int ier_spread = spreadinterp(nf1,nf2,1,(FLT*)fw,nj,xj,yj,dummy,(FLT*)cj,spopts);
-  if (opts.debug) printf("unspread (ier=%d):\t %.3g s\n",ier_spread,timer.elapsedsec());
+  if (opts->debug) printf("unspread (ier=%d):\t %.3g s\n",ier_spread,timer.elapsedsec());
   if (ier_spread>0) return ier_spread;
 
   FFTW_FR(fw); free(fwkerhalf1); free(fwkerhalf2);
-  if (opts.debug) printf("freed\n");
+  if (opts->debug) printf("freed\n");
   return 0;
 }
 
 
 int finufft2d2many(int ndata, BIGINT nj, FLT* xj, FLT *yj, CPX* c, int iflag,
-		   FLT eps, BIGINT ms, BIGINT mt, CPX* fk, nufft_opts opts)
+		   FLT eps, BIGINT ms, BIGINT mt, CPX* fk, nufft_opts* opts)
 /*
   Type-2 2D complex nonuniform FFT for multiple coeff vectors, same NU pts.
 
@@ -367,7 +367,7 @@ int finufft2d2many(int ndata, BIGINT nj, FLT* xj, FLT *yj, CPX* c, int iflag,
     xj,yj  x,y locations of targets (each a size-nj FLT array) in [-3pi,3pi]
     fk     FLT complex array of Fourier transform values (size ms*mt*ndata,
            increasing fast in ms then slow in mt then in ndata, ie Fortran
-           ordering). Along each dimension the ordering is set by opts.modeord.
+           ordering). Along each dimension the ordering is set by opts->modeord.
     iflag  if >=0, uses + sign in exponential, otherwise - sign (int)
     eps    precision requested (>1e-16)
     ms,mt  numbers of Fourier modes given in x and y (int64)
@@ -400,7 +400,7 @@ int finufft2d2many(int ndata, BIGINT nj, FLT* xj, FLT *yj, CPX* c, int iflag,
   }
   cout << scientific << setprecision(15);  // for debug
 
-  if (opts.debug) printf("2d2: ndata=%d (ms,mt)=(%ld,%ld) (nf1,nf2)=(%ld,%ld) nj=%ld ...\n",
+  if (opts->debug) printf("2d2: ndata=%d (ms,mt)=(%ld,%ld) (nf1,nf2)=(%ld,%ld) nj=%ld ...\n",
                          ndata,(int64_t)ms,(int64_t)mt,(int64_t)nf1,(int64_t)nf2,(int64_t)nj);
 
   // STEP 0: get Fourier coeffs of spread kernel in each dim:
@@ -409,7 +409,7 @@ int finufft2d2many(int ndata, BIGINT nj, FLT* xj, FLT *yj, CPX* c, int iflag,
   FLT *fwkerhalf2 = (FLT*)malloc(sizeof(FLT)*(nf2/2+1));
   onedim_fseries_kernel(nf1, fwkerhalf1, spopts);
   onedim_fseries_kernel(nf2, fwkerhalf2, spopts);
-  if (opts.debug) printf("kernel fser (ns=%d):\t %.3g s\n", spopts.nspread,timer.elapsedsec());
+  if (opts->debug) printf("kernel fser (ns=%d):\t %.3g s\n", spopts.nspread,timer.elapsedsec());
 
   int nth = MY_OMP_GET_MAX_THREADS();
   if (nth>1) {             // set up multithreaded fftw stuff...
@@ -424,14 +424,14 @@ int finufft2d2many(int ndata, BIGINT nj, FLT* xj, FLT *yj, CPX* c, int iflag,
 
   timer.restart();
   FFTW_PLAN p = FFTW_PLAN_MANY_DFT(2, n, nth, fw, n, 1, n[0]*n[1], fw, n, 1,
-                                   n[0]*n[1], fftsign, opts.fftw);
-  if (opts.debug) printf("fftw plan (%d)    \t %.3g s\n",opts.fftw,timer.elapsedsec());
+                                   n[0]*n[1], fftsign, opts->fftw);
+  if (opts->debug) printf("fftw plan (%d)    \t %.3g s\n",opts->fftw,timer.elapsedsec());
 
-  spopts.debug = opts.spread_debug;
-  spopts.sort = opts.spread_sort;
+  spopts.debug = opts->spread_debug;
+  spopts.sort = opts->spread_sort;
   spopts.spread_direction = 2;
   spopts.pirange = 1; FLT *dummy=NULL;
-  spopts.chkbnds = opts.chkbnds;
+  spopts.chkbnds = opts->chkbnds;
 
   int ier_check = spreadcheck(nf1,nf2,1,nj,xj,yj,dummy,spopts);
   if (ier_check>0) return ier_check;
@@ -439,7 +439,7 @@ int finufft2d2many(int ndata, BIGINT nj, FLT* xj, FLT *yj, CPX* c, int iflag,
   timer.restart();            // sort
   BIGINT* sort_indices = (BIGINT*)malloc(sizeof(BIGINT)*nj);
   int did_sort = spreadsort(sort_indices,nf1,nf2,1,nj,xj,yj,dummy,spopts);
-  if (opts.debug) printf("[many] sort (did_sort=%d):\t %.3g s\n", did_sort,
+  if (opts->debug) printf("[many] sort (did_sort=%d):\t %.3g s\n", did_sort,
 			 timer.elapsedsec());
 
   double time_fft = 0.0, time_spread = 0.0, time_deconv = 0.0;
@@ -450,7 +450,7 @@ int finufft2d2many(int ndata, BIGINT nj, FLT* xj, FLT *yj, CPX* c, int iflag,
   // make sure only single threaded spreadinterp used for each data...
   MY_OMP_SET_NESTED(0);       // note this doesn't change omp_get_max_nthreads()
 #endif
-  
+
   for (int j = 0; j*nth < ndata; ++j) {   // main loop over data blocks of size nth
 
     // STEP 1: amplify Fourier coeffs fk and copy into upsampled array fw
@@ -461,7 +461,7 @@ int finufft2d2many(int ndata, BIGINT nj, FLT* xj, FLT *yj, CPX* c, int iflag,
       CPX *fkstart = fk + (i+j*nth)*ms*mt; // ptr to coeffs this thread copies
       FFTW_CPX* fwstart = fw + i*nf1*nf2;  // ptr to upsampled FFT array of this thread
       deconvolveshuffle2d(2,1.0,fwkerhalf1,fwkerhalf2,ms,mt,(FLT*)fkstart,nf1,nf2,
-			  fwstart,opts.modeord);
+			  fwstart,opts->modeord);
     }
     time_deconv += timer.elapsedsec();
 
@@ -486,19 +486,19 @@ int finufft2d2many(int ndata, BIGINT nj, FLT* xj, FLT *yj, CPX* c, int iflag,
       if (ier_spreads[i]!=0)
         return ier_spreads[i];              // tell us one of these errors
   }
-  if (opts.debug) printf("[many] amplify & copy in:\t %.3g s\n", time_deconv);
-  if (opts.debug) printf("[many] fft (%d threads):\t\t %.3g s\n", nth, time_fft);
-  if (opts.debug) printf("[many] unspread:\t\t %.3g s\n", time_spread);
-  //if (opts.debug) printf("[many] total execute time (exclude fftw_plan, etc.) %.3g s\n",time_spread+time_fft+time_deconv);
+  if (opts->debug) printf("[many] amplify & copy in:\t %.3g s\n", time_deconv);
+  if (opts->debug) printf("[many] fft (%d threads):\t\t %.3g s\n", nth, time_fft);
+  if (opts->debug) printf("[many] unspread:\t\t %.3g s\n", time_spread);
+  //if (opts->debug) printf("[many] total execute time (exclude fftw_plan, etc.) %.3g s\n",time_spread+time_fft+time_deconv);
 
   FFTW_FR(fw); free(fwkerhalf1); free(fwkerhalf2); free(sort_indices);
   free(ier_spreads);
-  if (opts.debug) printf("freed\n");
+  if (opts->debug) printf("freed\n");
   return 0;
 }
 
 
-int finufft2d3(BIGINT nj,FLT* xj,FLT* yj,CPX* cj,int iflag, FLT eps, BIGINT nk, FLT* s, FLT *t, CPX* fk, nufft_opts opts)
+int finufft2d3(BIGINT nj,FLT* xj,FLT* yj,CPX* cj,int iflag, FLT eps, BIGINT nk, FLT* s, FLT *t, CPX* fk, nufft_opts* opts)
  /*  Type-3 2D complex nonuniform FFT.
 
                nj-1
@@ -552,7 +552,7 @@ int finufft2d3(BIGINT nj,FLT* xj,FLT* yj,CPX* cj,int iflag, FLT eps, BIGINT nk, 
   arraywidcen(nk,t,&S2,&D2);   // {t_k}
   set_nhg_type3(S1,X1,opts,spopts,&nf1,&h1,&gam1);          // applies twist i)
   set_nhg_type3(S2,X2,opts,spopts,&nf2,&h2,&gam2);
-  if (opts.debug) printf("2d3: X1=%.3g C1=%.3g S1=%.3g D1=%.3g gam1=%g nf1=%ld X2=%.3g C2=%.3g S2=%.3g D2=%.3g gam2=%g nf2=%ld nj=%ld nk=%ld...\n",X1,C1,S1,D1,gam1,(int64_t)nf1,X2,C2,S2,D2,gam2,(int64_t)nf2,(int64_t)nj,(int64_t)nk);
+  if (opts->debug) printf("2d3: X1=%.3g C1=%.3g S1=%.3g D1=%.3g gam1=%g nf1=%ld X2=%.3g C2=%.3g S2=%.3g D2=%.3g gam2=%g nf2=%ld nj=%ld nk=%ld...\n",X1,C1,S1,D1,gam1,(int64_t)nf1,X2,C2,S2,D2,gam2,(int64_t)nf2,(int64_t)nj,(int64_t)nk);
   if ((int64_t)nf1*nf2>MAX_NF) {
     fprintf(stderr,"nf1*nf2=%.3g exceeds MAX_NF of %.3g\n",(double)nf1*nf2,(double)MAX_NF);
     return ERR_MAXNALLOC;
@@ -569,7 +569,7 @@ int finufft2d3(BIGINT nj,FLT* xj,FLT* yj,CPX* cj,int iflag, FLT eps, BIGINT nk, 
 #pragma omp parallel for schedule(dynamic)               // since cexp slow
     for (BIGINT j=0;j<nj;++j)
       cpj[j] = cj[j] * exp(imasign*(D1*xj[j]+D2*yj[j])); // rephase c_j -> c'_j
-    if (opts.debug) printf("prephase:\t\t %.3g s\n",timer.elapsedsec());
+    if (opts->debug) printf("prephase:\t\t %.3g s\n",timer.elapsedsec());
   } else
     for (BIGINT j=0;j<nj;++j)
       cpj[j] = cj[j];                                    // just copy over
@@ -581,7 +581,7 @@ int finufft2d3(BIGINT nj,FLT* xj,FLT* yj,CPX* cj,int iflag, FLT eps, BIGINT nk, 
   FLT *dummy=NULL;
   int ier_spread = spreadinterp(nf1,nf2,1,(FLT*)fw,nj,xpj,ypj,dummy,(FLT*)cpj,spopts);
   free(xpj); free(ypj); free(cpj);
-  if (opts.debug) printf("spread (ier=%d):\t\t %.3g s\n",ier_spread,timer.elapsedsec());
+  if (opts->debug) printf("spread (ier=%d):\t\t %.3g s\n",ier_spread,timer.elapsedsec());
   if (ier_spread>0) return ier_spread;
 
   // Step 2: call type-2 to eval regular as Fourier series at rescaled targs
@@ -594,7 +594,7 @@ int finufft2d3(BIGINT nj,FLT* xj,FLT* yj,CPX* cj,int iflag, FLT eps, BIGINT nk, 
   }
   int ier_t2 = finufft2d2(nk,sp,tp,fk,iflag,eps,nf1,nf2,fw,opts);
   free(fw);
-  if (opts.debug) printf("total type-2 (ier=%d):\t %.3g s\n",ier_t2,timer.elapsedsec());
+  if (opts->debug) printf("total type-2 (ier=%d):\t %.3g s\n",ier_t2,timer.elapsedsec());
   if (ier_t2) exit(ier_t2);
 
   // Step 3a: compute Fourier transform of scaled kernel at targets
@@ -604,7 +604,7 @@ int finufft2d3(BIGINT nj,FLT* xj,FLT* yj,CPX* cj,int iflag, FLT eps, BIGINT nk, 
   // exploit that Fourier transform separates because kernel built separable...
   onedim_nuft_kernel(nk, sp, fkker1, spopts);           // fill fkker1
   onedim_nuft_kernel(nk, tp, fkker2, spopts);           // fill fkker2
-  if (opts.debug) printf("kernel FT (ns=%d):\t %.3g s\n", spopts.nspread,timer.elapsedsec());
+  if (opts->debug) printf("kernel FT (ns=%d):\t %.3g s\n", spopts.nspread,timer.elapsedsec());
   free(sp); free(tp);
   // Step 3b: correct for spreading by dividing by the Fourier transform from 3a
   timer.restart();
@@ -617,14 +617,14 @@ int finufft2d3(BIGINT nj,FLT* xj,FLT* yj,CPX* cj,int iflag, FLT eps, BIGINT nk, 
 #pragma omp parallel for schedule(dynamic)
     for (BIGINT k=0;k<nk;++k)         // also phases to account for C1,C2 shift
       fk[k] *= (CPX)(1.0/(fkker1[k]*fkker2[k]));
-  if (opts.debug) printf("deconvolve:\t\t %.3g s\n",timer.elapsedsec());
+  if (opts->debug) printf("deconvolve:\t\t %.3g s\n",timer.elapsedsec());
 
-  free(fkker1); free(fkker2); if (opts.debug) printf("freed\n");
+  free(fkker1); free(fkker2); if (opts->debug) printf("freed\n");
   return 0;
 }
 
 int finufft2d1_gpu(BIGINT nj,FLT* xj,FLT *yj,CPX* cj,int iflag,
-		   FLT eps, BIGINT ms, BIGINT mt, CPX* fk, nufft_opts opts)
+		   FLT eps, BIGINT ms, BIGINT mt, CPX* fk, nufft_opts* opts)
 {
 	FLT *d_xj, *d_yj;
 	CUCPX *d_cj, *d_fk;
@@ -648,24 +648,24 @@ int finufft2d1_gpu(BIGINT nj,FLT* xj,FLT *yj,CPX* cj,int iflag,
 	nmodes[1] = mt;
 	nmodes[2] = 1;
 	int ier=cufinufft_default_opts(type1, dim, dplan.opts);
-	ier=cufinufft_makeplan(type1, dim, nmodes, iflag, ntransf, eps, 
+	ier=cufinufft_makeplan(type1, dim, nmodes, iflag, ntransf, eps,
 		ntransfcufftplan, &dplan);
-	if (opts.debug) printf("[time  ] cufinufft2d1 plan:\t\t %.3g s\n", 
+	if (opts->debug) printf("[time  ] cufinufft2d1 plan:\t\t %.3g s\n",
 		timer.elapsedsec());
 
 	timer.start();
 	ier=cufinufft_setNUpts(nj, d_xj, d_yj, NULL, 0, NULL, NULL, NULL, &dplan);
-	if (opts.debug) printf("[time  ] cufinufft2d1 setNUpts:\t\t %.3g s\n", 
+	if (opts->debug) printf("[time  ] cufinufft2d1 setNUpts:\t\t %.3g s\n",
 		timer.elapsedsec());
 
 	timer.restart();
 	ier=cufinufft_exec(d_cj, d_fk, &dplan);
-	if (opts.debug) printf("[time  ] cufinufft2d1 exec:\t\t %.3g s\n", 
+	if (opts->debug) printf("[time  ] cufinufft2d1 exec:\t\t %.3g s\n",
 		timer.elapsedsec());
 
 	timer.restart();
 	ier=cufinufft_destroy(&dplan);
-	if (opts.debug) printf("[time  ] cufinufft2d1 destroy:\t\t %.3g s\n", 
+	if (opts->debug) printf("[time  ] cufinufft2d1 destroy:\t\t %.3g s\n",
 		timer.elapsedsec());
 
 	cudaMemcpy(fk,d_fk,ms*mt*sizeof(CUCPX),cudaMemcpyDeviceToHost);
@@ -673,7 +673,7 @@ int finufft2d1_gpu(BIGINT nj,FLT* xj,FLT *yj,CPX* cj,int iflag,
 }
 
 int finufft2d2_gpu(BIGINT nj,FLT* xj,FLT *yj,CPX* cj,int iflag,
-		   FLT eps, BIGINT ms, BIGINT mt, CPX* fk, nufft_opts opts)
+		   FLT eps, BIGINT ms, BIGINT mt, CPX* fk, nufft_opts* opts)
 {
 	cufinufft_plan dplan;
 	CNTime timer;
@@ -698,24 +698,24 @@ int finufft2d2_gpu(BIGINT nj,FLT* xj,FLT *yj,CPX* cj,int iflag,
 	nmodes[1] = mt;
 	nmodes[2] = 1;
 	int ier=cufinufft_default_opts(type2, dim, dplan.opts);
-	ier=cufinufft_makeplan(type2, dim, nmodes, iflag, ntransf, eps, 
+	ier=cufinufft_makeplan(type2, dim, nmodes, iflag, ntransf, eps,
 		ntransfcufftplan, &dplan);
-  	if (opts.debug) printf("[time  ] cufinufft2d2 plan:\t\t %.3g s\n", 
+	if (opts->debug) printf("[time  ] cufinufft2d2 plan:\t\t %.3g s\n",
 		timer.elapsedsec());
 
   	timer.start();
   	ier=cufinufft_setNUpts(nj, d_xj, d_yj, NULL, 0, NULL, NULL, NULL, &dplan);
-  	if (opts.debug) printf("[time  ] cufinufft2d1 setNUpts:\t\t %.3g s\n", 
+	if (opts->debug) printf("[time  ] cufinufft2d1 setNUpts:\t\t %.3g s\n",
 		timer.elapsedsec());
 
   	timer.restart();
   	ier=cufinufft_exec(d_cj, d_fk, &dplan);
-  	if (opts.debug) printf("[time  ] cufinufft2d2 exec:\t\t %.3g s\n", 
+	if (opts->debug) printf("[time  ] cufinufft2d2 exec:\t\t %.3g s\n",
 		timer.elapsedsec());
 
   	timer.restart();
   	ier=cufinufft_destroy(&dplan);
-  	if (opts.debug) printf("[time  ] cufinufft2d1 destroy:\t\t %.3g s\n", 
+	if (opts->debug) printf("[time  ] cufinufft2d1 destroy:\t\t %.3g s\n",
 		timer.elapsedsec());
 
 	cudaMemcpy(cj,d_cj,nj*sizeof(CUCPX),cudaMemcpyDeviceToHost);

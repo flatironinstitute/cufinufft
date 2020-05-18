@@ -77,7 +77,7 @@ int main(int argc, char* argv[])
   CNTime timer; timer.start();
   int ier;
   double ti;
-  ier = finufft2d1(M,x,y,c,isign,tol,N1,N2,Fcpu,opts);
+  ier = finufft2d1(M,x,y,c,isign,tol,N1,N2,Fcpu,&opts);
   ti=timer.elapsedsec();
   if (ier!=0) {
     printf("error (ier=%d)!\n",ier);
@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
   printf("[time  ] (warm up) First cudamalloc call %.3g s\n", timer.elapsedsec());
 #endif
   timer.restart();
-  ier = finufft2d1_gpu(M,x,y,c,isign,tol,N1,N2,Fgpu,opts);
+  ier = finufft2d1_gpu(M,x,y,c,isign,tol,N1,N2,Fgpu,&opts);
   ti=timer.elapsedsec();
   if (ier!=0) {
     printf("error (ier=%d)!\n",ier);
@@ -145,14 +145,14 @@ int main(int argc, char* argv[])
     for (BIGINT m=0; m<N; ++m) F[m] = crandm11r(&se);
   }
   timer.restart();
-  ier = finufft2d2(M,x,y,ccpu,isign,tol,N1,N2,F,opts);
+  ier = finufft2d2(M,x,y,ccpu,isign,tol,N1,N2,F,&opts);
   ti=timer.elapsedsec();
   if (ier!=0) {
     printf("error (ier=%d)!\n",ier);
   } else
     printf("[cpu   ] (%ld,%ld) modes to %ld NU pts in %.3g s \t%.3g NU pts/s\n\n",(int64_t)N1,(int64_t)N2,(int64_t)M,ti,M/ti);
   timer.restart();
-  ier = finufft2d2_gpu(M,x,y,cgpu,isign,tol,N1,N2,F,opts);
+  ier = finufft2d2_gpu(M,x,y,cgpu,isign,tol,N1,N2,F,&opts);
   ti=timer.elapsedsec();
   if (ier!=0) {
     printf("error (ier=%d)!\n",ier);
@@ -207,7 +207,7 @@ int main(int argc, char* argv[])
     }
   }
   timer.restart();
-  ier = finufft2d3(M,x,y,c,isign,tol,N,s,t,F,opts);
+  ier = finufft2d3(M,x,y,c,isign,tol,N,s,t,F,&opts);
   ti=timer.elapsedsec();
   if (ier!=0) {
     printf("error (ier=%d)!\n",ier);

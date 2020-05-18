@@ -69,18 +69,18 @@ int cufinufft_interp3d(int ms, int mt, int mu, int nf1, int nf2, int nf3,
 	cudaEventElapsedTime(&milliseconds, start, stop);
 	printf("[time  ] Copy memory HtoD\t %.3g ms\n", milliseconds);
 #endif
-	if(d_plan->opts.gpu_method == 1){
+	if(d_plan->opts->gpu_method == 1){
 		ier = cuspread3d_nuptsdriven_prop(nf1,nf2,nf3,M,d_plan);
 		if(ier != 0 ){
 			printf("error: cuinterp3d_nuptsdriven_prop, method(%d)\n", 
-				d_plan->opts.gpu_method);
+				d_plan->opts->gpu_method);
 			return 0;
 		}
 	}
-	if(d_plan->opts.gpu_method == 2){
+	if(d_plan->opts->gpu_method == 2){
 		ier = cuspread3d_subprob_prop(nf1,nf2,nf3,M,d_plan);
 		if(ier != 0 ){
-			printf("error: cuspread3d_subprob_prop, method(%d)\n", d_plan->opts.gpu_method);
+			printf("error: cuspread3d_subprob_prop, method(%d)\n", d_plan->opts->gpu_method);
 			return 0;
 		}
 	}
@@ -90,7 +90,7 @@ int cufinufft_interp3d(int ms, int mt, int mu, int nf1, int nf2, int nf3,
 	cudaEventRecord(stop);
 	cudaEventSynchronize(stop);
 	cudaEventElapsedTime(&milliseconds, start, stop);
-	printf("[time  ] Interp (%d)\t\t %.3g ms\n", d_plan->opts.gpu_method, milliseconds);
+	printf("[time  ] Interp (%d)\t\t %.3g ms\n", d_plan->opts->gpu_method, milliseconds);
 #endif
 	cudaEventRecord(start);
 	checkCudaErrors(cudaMemcpy(h_c,d_plan->c,M*sizeof(CUCPX),cudaMemcpyDeviceToHost));
@@ -136,7 +136,7 @@ int cuinterp3d(cufinufft_plan* d_plan, int blksize)
 	cudaEventCreate(&stop);
 
 	int ier;
-	switch(d_plan->opts.gpu_method)
+	switch(d_plan->opts->gpu_method)
 	{
 		case 1:
 			{
@@ -209,7 +209,7 @@ int cuinterp3d_nuptsdriven(int nf1, int nf2, int nf3, int M, cufinufft_plan *d_p
 	blocks.y = 1;
 
 	cudaEventRecord(start);
-	if(d_plan->opts.gpu_kerevalmeth){
+	if(d_plan->opts->gpu_kerevalmeth){
 #if 0
 		cudaStream_t *streams = d_plan->streams;
 		int nstreams = d_plan->nstreams;
@@ -249,7 +249,7 @@ int cuinterp3d_nuptsdriven(int nf1, int nf2, int nf3, int M, cufinufft_plan *d_p
 	cudaEventSynchronize(stop);
 	cudaEventElapsedTime(&milliseconds, start, stop);
 	printf("[time  ] \tKernel Interp_3d_NUptsdriven (%d) \t%.3g ms\n", 
-		milliseconds, d_plan->opts.gpu_kerevalmeth);
+		milliseconds, d_plan->opts->gpu_kerevalmeth);
 #endif
 	return 0;
 }
@@ -265,19 +265,19 @@ int cuinterp3d_subprob(int nf1, int nf2, int nf3, int M, cufinufft_plan *d_plan,
 	dim3 blocks;
 
 	int ns=d_plan->spopts.nspread;   // psi's support in terms of number of cells
-	int maxsubprobsize=d_plan->opts.gpu_maxsubprobsize;
+	int maxsubprobsize=d_plan->opts->gpu_maxsubprobsize;
 
 	// assume that bin_size_x > ns/2;
-	int bin_size_x=d_plan->opts.gpu_binsizex;
-	int bin_size_y=d_plan->opts.gpu_binsizey;
-	int bin_size_z=d_plan->opts.gpu_binsizez;
+	int bin_size_x=d_plan->opts->gpu_binsizex;
+	int bin_size_y=d_plan->opts->gpu_binsizey;
+	int bin_size_z=d_plan->opts->gpu_binsizez;
 	int numbins[3];
 	numbins[0] = ceil((FLT) nf1/bin_size_x);
 	numbins[1] = ceil((FLT) nf2/bin_size_y);
 	numbins[2] = ceil((FLT) nf3/bin_size_z);
 #ifdef INFO
 	cout<<"[info  ] Dividing the uniform grids to bin size["
-		<<d_plan->opts.gpu_binsizex<<"x"<<d_plan->opts.gpu_binsizey<<"x"<<d_plan->opts.gpu_binsizez<<"]"<<endl;
+		<<d_plan->opts->gpu_binsizex<<"x"<<d_plan->opts->gpu_binsizey<<"x"<<d_plan->opts->gpu_binsizez<<"]"<<endl;
 	cout<<"[info  ] numbins = ["<<numbins[0]<<"x"<<numbins[1]<<"x"<<numbins[2]
 	<<"]"<<endl;
 #endif
@@ -309,7 +309,7 @@ int cuinterp3d_subprob(int nf1, int nf2, int nf3, int M, cufinufft_plan *d_plan,
 	}
 
 	for(int t=0; t<blksize; t++){
-		if(d_plan->opts.gpu_kerevalmeth==1){
+		if(d_plan->opts->gpu_kerevalmeth==1){
 			Interp_3d_Subprob_Horner<<<totalnumsubprob, 256,
 				sharedplanorysize>>>(d_kx, d_ky, d_kz, d_c+t*M, d_fw+t*nf1*nf2*nf3, 
 				M, ns, nf1, nf2, nf3, sigma, d_binstartpts, d_binsize, bin_size_x,
@@ -331,7 +331,7 @@ int cuinterp3d_subprob(int nf1, int nf2, int nf3, int M, cufinufft_plan *d_plan,
 	cudaEventSynchronize(stop);
 	cudaEventElapsedTime(&milliseconds, start, stop);
 	printf("[time  ] \tKernel Interp_3d_Subprob (%d) \t%.3g ms\n", milliseconds,
-	d_plan->opts.gpu_kerevalmeth);
+	d_plan->opts->gpu_kerevalmeth);
 #endif
 	return 0;
 }

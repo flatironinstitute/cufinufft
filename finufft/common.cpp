@@ -28,30 +28,30 @@ void finufft_default_opts(nufft_opts &o)
 	o.modeord = 0;
 }
 
-int setup_spreader_for_nufft(spread_opts &spopts, FLT eps, nufft_opts opts)
+int setup_spreader_for_nufft(spread_opts &spopts, FLT eps, nufft_opts* opts)
 // Set up the spreader parameters given eps, and pass across various nufft
 // options. Report status of setup_spreader.  Barnett 10/30/17
 {
-  int ier=setup_spreader(spopts, eps, opts.upsampfac, opts.spread_kerevalmeth);
-  spopts.debug = opts.spread_debug;
-  spopts.sort = opts.spread_sort;     // could make dim or CPU choices here?
-  spopts.kerpad = opts.spread_kerpad; // (only applies to kerevalmeth=0)
-  spopts.chkbnds = opts.chkbnds;
+  int ier=setup_spreader(spopts, eps, opts->upsampfac, opts->spread_kerevalmeth);
+  spopts.debug = opts->spread_debug;
+  spopts.sort = opts->spread_sort;     // could make dim or CPU choices here?
+  spopts.kerpad = opts->spread_kerpad; // (only applies to kerevalmeth=0)
+  spopts.chkbnds = opts->chkbnds;
   spopts.pirange = 1;                 // could allow user control?
   return ier;
 } 
 
-void set_nf_type12(BIGINT ms, nufft_opts opts, spread_opts spopts, BIGINT *nf)
+void set_nf_type12(BIGINT ms, nufft_opts* opts, spread_opts spopts, BIGINT *nf)
 // type 1 & 2 recipe for how to set 1d size of upsampled array, nf, given opts
 // and requested number of Fourier modes ms.
 {
-  *nf = (BIGINT)(opts.upsampfac*ms);
+  *nf = (BIGINT)(opts->upsampfac*ms);
   if (*nf<2*spopts.nspread) *nf=2*spopts.nspread; // otherwise spread fails
   if (*nf<MAX_NF)                                 // otherwise will fail anyway
     *nf = next235even(*nf);                       // expensive at huge nf
 }
 
-void set_nhg_type3(FLT S, FLT X, nufft_opts opts, spread_opts spopts,
+void set_nhg_type3(FLT S, FLT X, nufft_opts* opts, spread_opts spopts,
 		     BIGINT *nf, FLT *h, FLT *gam)
 /* sets nf, h (upsampled grid spacing), and gamma (x_j rescaling factor),
    for type 3 only.
@@ -76,7 +76,7 @@ void set_nhg_type3(FLT S, FLT X, nufft_opts opts, spread_opts spopts,
   else
     Ssafe = max(Ssafe, 1/X);
   // use the safe X and S...
-  FLT nfd = 2.0*opts.upsampfac*Ssafe*Xsafe/PI + nss;
+  FLT nfd = 2.0*opts->upsampfac*Ssafe*Xsafe/PI + nss;
   if (!isfinite(nfd)) nfd=0.0;                // use FLT to catch inf
   *nf = (BIGINT)nfd;
   //printf("initial nf=%ld, ns=%d\n",*nf,spopts.nspread);
@@ -85,7 +85,7 @@ void set_nhg_type3(FLT S, FLT X, nufft_opts opts, spread_opts spopts,
   if (*nf<MAX_NF)                             // otherwise will fail anyway
     *nf = next235even(*nf);                   // expensive at huge nf
   *h = 2*PI / *nf;                            // upsampled grid spacing
-  *gam = (FLT)*nf / (2.0*opts.upsampfac*Ssafe);  // x scale fac to x'
+  *gam = (FLT)*nf / (2.0*opts->upsampfac*Ssafe);  // x scale fac to x'
 }
 
 void onedim_fseries_kernel(BIGINT nf, FLT *fwkerhalf, spread_opts opts)

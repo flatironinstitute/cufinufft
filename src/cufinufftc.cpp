@@ -2,9 +2,9 @@
 
 extern "C" {
 
-int cufinufftc_default_opts(finufft_type type, int dim, nufft_opts *opts)
+int cufinufftc_default_opts(finufft_type type, int dim, nufft_opts* opts)
 {
-    return cufinufft_default_opts(type, dim, *opts);
+    return cufinufft_default_opts(type, dim, opts);
 }
 
 int cufinufftc_makeplan(finufft_type type, int dim, int *n_modes, int iflag,

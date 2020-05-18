@@ -83,27 +83,27 @@ int cufinufft_spread3d(int ms, int mt, int mu, int nf1, int nf2, int nf3,
 	printf("[time  ] Copy memory HtoD \t %.3g ms\n", milliseconds);
 #endif
 	cudaEventRecord(start);
-	if(d_plan->opts.gpu_method == 1){
+	if(d_plan->opts->gpu_method == 1){
 		ier = cuspread3d_nuptsdriven_prop(nf1,nf2,nf3,M,d_plan);
 		if(ier != 0 ){
 			printf("error: cuspread3d_nuptsdriven_prop, method(%d)\n", 
-				d_plan->opts.gpu_method);
+				d_plan->opts->gpu_method);
 			return 0;
 		}
 	}
-	if(d_plan->opts.gpu_method == 2){
+	if(d_plan->opts->gpu_method == 2){
 		ier = cuspread3d_subprob_prop(nf1,nf2,nf3,M,d_plan);
 		if(ier != 0 ){
 			printf("error: cuspread3d_subprob_prop, method(%d)\n", 
-				d_plan->opts.gpu_method);
+				d_plan->opts->gpu_method);
 			return 0;
 		}
 	}
-	if(d_plan->opts.gpu_method == 4){
+	if(d_plan->opts->gpu_method == 4){
 		ier = cuspread3d_blockgather_prop(nf1,nf2,nf3,M,d_plan);
 		if(ier != 0 ){
 			printf("error: cuspread3d_blockgather_prop, method(%d)\n", 
-				d_plan->opts.gpu_method);
+				d_plan->opts->gpu_method);
 			return 0;
 		}
 	}
@@ -120,7 +120,7 @@ int cufinufft_spread3d(int ms, int mt, int mu, int nf1, int nf2, int nf3,
 	cudaEventRecord(stop);
 	cudaEventSynchronize(stop);
 	cudaEventElapsedTime(&milliseconds, start, stop);
-	printf("[time  ] Spread (%d)\t\t %.3g ms\n", d_plan->opts.gpu_method, milliseconds);
+	printf("[time  ] Spread (%d)\t\t %.3g ms\n", d_plan->opts->gpu_method, milliseconds);
 #endif
 	cudaEventRecord(start);
 	checkCudaErrors(cudaMemcpy(h_fw,d_plan->fw,nf1*nf2*nf3*sizeof(CUCPX),
@@ -169,7 +169,7 @@ int cuspread3d(cufinufft_plan* d_plan, int blksize)
 	cudaEventCreate(&stop);
 
 	int ier = 0;
-	switch(d_plan->opts.gpu_method)
+	switch(d_plan->opts->gpu_method)
 	{
 		case 1:
 			{
@@ -215,13 +215,13 @@ int cuspread3d_nuptsdriven_prop(int nf1, int nf2, int nf3, int M,
 	cudaEventCreate(&start);
 	cudaEventCreate(&stop);
 
-	if(d_plan->opts.gpu_sort){
+	if(d_plan->opts->gpu_sort){
 		dim3 threadsPerBlock;
 		dim3 blocks;
 
-		int bin_size_x=d_plan->opts.gpu_binsizex;
-		int bin_size_y=d_plan->opts.gpu_binsizey;
-		int bin_size_z=d_plan->opts.gpu_binsizez;
+		int bin_size_x=d_plan->opts->gpu_binsizex;
+		int bin_size_y=d_plan->opts->gpu_binsizey;
+		int bin_size_z=d_plan->opts->gpu_binsizez;
 		int numbins[3];
 		numbins[0] = ceil((FLT) nf1/bin_size_x);
 		numbins[1] = ceil((FLT) nf2/bin_size_y);
@@ -229,8 +229,8 @@ int cuspread3d_nuptsdriven_prop(int nf1, int nf2, int nf3, int M,
 
 #ifdef DEBUG
 		cout<<"[debug ] Dividing the uniform grids to bin size["
-			<<d_plan->opts.gpu_binsizex<<"x"<<d_plan->opts.gpu_binsizey<<"x"<<
-			d_plan->opts.gpu_binsizez<<"]"<<endl;
+			<<d_plan->opts->gpu_binsizex<<"x"<<d_plan->opts->gpu_binsizey<<"x"<<
+			d_plan->opts->gpu_binsizez<<"]"<<endl;
 		cout<<"[debug ] numbins = ["<<numbins[0]<<"x"<<numbins[1]<<"x"<<numbins[2]
 			<<"]"<<endl;
 #endif
@@ -419,7 +419,7 @@ int cuspread3d_nuptsdriven(int nf1, int nf2, int nf3, int M,
 	blocks.x = (M + threadsPerBlock.x - 1)/threadsPerBlock.x;
 	blocks.y = 1;
 	cudaEventRecord(start);
-	if(d_plan->opts.gpu_kerevalmeth==1){
+	if(d_plan->opts->gpu_kerevalmeth==1){
 		for(int t=0; t<blksize; t++){
 			Spread_3d_NUptsdriven_Horner<<<blocks, threadsPerBlock>>>(d_kx, d_ky, 
 				d_kz, d_c+t*M, d_fw+t*nf1*nf2*nf3, M, ns, nf1, nf2, nf3, sigma, 
@@ -438,7 +438,7 @@ int cuspread3d_nuptsdriven(int nf1, int nf2, int nf3, int M,
 	cudaEventSynchronize(stop);
 	cudaEventElapsedTime(&milliseconds, start, stop);
 	printf("[time  ] \tKernel Spread_3d_NUptsdriven (%d)\t%.3g ms\n", 
-		milliseconds,d_plan->opts.gpu_kerevalmeth);
+		milliseconds,d_plan->opts->gpu_kerevalmeth);
 #endif
 	return 0;
 }
@@ -455,19 +455,19 @@ int cuspread3d_blockgather_prop(int nf1, int nf2, int nf3, int M,
 
 	int pirange = d_plan->spopts.pirange;
 
-	int maxsubprobsize=d_plan->opts.gpu_maxsubprobsize;
-	int o_bin_size_x = d_plan->opts.gpu_obinsizex;
-	int o_bin_size_y = d_plan->opts.gpu_obinsizey;
-	int o_bin_size_z = d_plan->opts.gpu_obinsizez;
+	int maxsubprobsize=d_plan->opts->gpu_maxsubprobsize;
+	int o_bin_size_x = d_plan->opts->gpu_obinsizex;
+	int o_bin_size_y = d_plan->opts->gpu_obinsizey;
+	int o_bin_size_z = d_plan->opts->gpu_obinsizez;
 	int numobins[3];
 
 	numobins[0] = ceil((FLT) nf1/o_bin_size_x);
 	numobins[1] = ceil((FLT) nf2/o_bin_size_y);
 	numobins[2] = ceil((FLT) nf3/o_bin_size_z);
 
-	int bin_size_x=d_plan->opts.gpu_binsizex;
-	int bin_size_y=d_plan->opts.gpu_binsizey;
-	int bin_size_z=d_plan->opts.gpu_binsizez;
+	int bin_size_x=d_plan->opts->gpu_binsizex;
+	int bin_size_y=d_plan->opts->gpu_binsizey;
+	int bin_size_z=d_plan->opts->gpu_binsizez;
 	int binsperobinx, binsperobiny, binsperobinz;
 	int numbins[3];
 	binsperobinx = o_bin_size_x/bin_size_x+2;
@@ -478,8 +478,8 @@ int cuspread3d_blockgather_prop(int nf1, int nf2, int nf3, int M,
 	numbins[2] = numobins[2]*(binsperobinz);
 #ifdef DEBUG
 	cout<<"[debug ] Dividing the uniform grids to bin size["
-		<<d_plan->opts.gpu_binsizex<<"x"<<d_plan->opts.gpu_binsizey<<"x"<<
-		d_plan->opts.gpu_binsizez<<"]"<<endl;
+		<<d_plan->opts->gpu_binsizex<<"x"<<d_plan->opts->gpu_binsizey<<"x"<<
+		d_plan->opts->gpu_binsizez<<"]"<<endl;
 	cout<<"[debug ] numobins = ["<<numobins[0]<<"x"<<numobins[1]<<"x"<<
 		numobins[2]<<"]"<<endl;
 	cout<<"[debug ] numbins = ["<<numbins[0]<<"x"<<numbins[1]<<"x"<<
@@ -833,14 +833,14 @@ int cuspread3d_blockgather(int nf1, int nf2, int nf3, int M,
 	FLT es_beta=d_plan->spopts.ES_beta;
 	FLT sigma=d_plan->spopts.upsampfac;
 	int pirange=d_plan->spopts.pirange;
-	int maxsubprobsize=d_plan->opts.gpu_maxsubprobsize;
+	int maxsubprobsize=d_plan->opts->gpu_maxsubprobsize;
 
-	int obin_size_x=d_plan->opts.gpu_obinsizex;
-	int obin_size_y=d_plan->opts.gpu_obinsizey;
-	int obin_size_z=d_plan->opts.gpu_obinsizez;
-	int bin_size_x=d_plan->opts.gpu_binsizex;
-	int bin_size_y=d_plan->opts.gpu_binsizey;
-	int bin_size_z=d_plan->opts.gpu_binsizez;
+	int obin_size_x=d_plan->opts->gpu_obinsizex;
+	int obin_size_y=d_plan->opts->gpu_obinsizey;
+	int obin_size_z=d_plan->opts->gpu_obinsizez;
+	int bin_size_x=d_plan->opts->gpu_binsizex;
+	int bin_size_y=d_plan->opts->gpu_binsizey;
+	int bin_size_z=d_plan->opts->gpu_binsizez;
 	int numobins[3];
 	numobins[0] = ceil((FLT) nf1/obin_size_x);
 	numobins[1] = ceil((FLT) nf2/obin_size_y);
@@ -872,7 +872,7 @@ int cuspread3d_blockgather(int nf1, int nf2, int nf3, int M,
 
 	cudaEventRecord(start);
 	for(int t=0; t<blksize; t++){
-		if(d_plan->opts.gpu_kerevalmeth == 1){
+		if(d_plan->opts->gpu_kerevalmeth == 1){
 			size_t sharedplanorysize = obin_size_x*obin_size_y*obin_size_z
 				*sizeof(CUCPX);
 			if(sharedplanorysize > 49152){
@@ -908,7 +908,7 @@ int cuspread3d_blockgather(int nf1, int nf2, int nf3, int M,
 			cudaEventSynchronize(stop);
 			cudaEventElapsedTime(&milliseconds, start, stop);
 			printf("[time  ] \tKernel Spread_3d_BlockGather (%d)\t%.3g ms\n",
-				milliseconds, d_plan->opts.gpu_kerevalmeth);
+				milliseconds, d_plan->opts->gpu_kerevalmeth);
 #endif
 	return 0;
 }
@@ -923,17 +923,17 @@ int cuspread3d_subprob_prop(int nf1, int nf2, int nf3, int M,
 	dim3 threadsPerBlock;
 	dim3 blocks;
 
-	int maxsubprobsize=d_plan->opts.gpu_maxsubprobsize;
-	int bin_size_x=d_plan->opts.gpu_binsizex;
-	int bin_size_y=d_plan->opts.gpu_binsizey;
-	int bin_size_z=d_plan->opts.gpu_binsizez;
+	int maxsubprobsize=d_plan->opts->gpu_maxsubprobsize;
+	int bin_size_x=d_plan->opts->gpu_binsizex;
+	int bin_size_y=d_plan->opts->gpu_binsizey;
+	int bin_size_z=d_plan->opts->gpu_binsizez;
 	int numbins[3];
 	numbins[0] = ceil((FLT) nf1/bin_size_x);
 	numbins[1] = ceil((FLT) nf2/bin_size_y);
 	numbins[2] = ceil((FLT) nf2/bin_size_z);
 #ifdef DEBUG
 	cout<<"[debug ] Dividing the uniform grids to bin size["
-		<<d_plan->opts.gpu_binsizex<<"x"<<d_plan->opts.gpu_binsizey<<"x"<<d_plan->opts.gpu_binsizez<<"]"<<endl;
+		<<d_plan->opts->gpu_binsizex<<"x"<<d_plan->opts->gpu_binsizey<<"x"<<d_plan->opts->gpu_binsizez<<"]"<<endl;
 	cout<<"[debug ] numbins = ["<<numbins[0]<<"x"<<numbins[1]<<"x"<<numbins[2]
 		<<"]"<<endl;
 #endif
@@ -1174,19 +1174,19 @@ int cuspread3d_subprob(int nf1, int nf2, int nf3, int M, cufinufft_plan *d_plan,
 	dim3 blocks;
 
 	int ns=d_plan->spopts.nspread;   // psi's support in terms of number of cells
-	int maxsubprobsize=d_plan->opts.gpu_maxsubprobsize;
+	int maxsubprobsize=d_plan->opts->gpu_maxsubprobsize;
 
 	// assume that bin_size_x > ns/2;
-	int bin_size_x=d_plan->opts.gpu_binsizex;
-	int bin_size_y=d_plan->opts.gpu_binsizey;
-	int bin_size_z=d_plan->opts.gpu_binsizez;
+	int bin_size_x=d_plan->opts->gpu_binsizex;
+	int bin_size_y=d_plan->opts->gpu_binsizey;
+	int bin_size_z=d_plan->opts->gpu_binsizez;
 	int numbins[3];
 	numbins[0] = ceil((FLT) nf1/bin_size_x);
 	numbins[1] = ceil((FLT) nf2/bin_size_y);
 	numbins[2] = ceil((FLT) nf3/bin_size_z);
 #ifdef INFO
 	cout<<"[info  ] Dividing the uniform grids to bin size["
-		<<d_plan->opts.gpu_binsizex<<"x"<<d_plan->opts.gpu_binsizey<<"x"<<d_plan->opts.gpu_binsizez<<"]"<<endl;
+		<<d_plan->opts->gpu_binsizex<<"x"<<d_plan->opts->gpu_binsizey<<"x"<<d_plan->opts->gpu_binsizez<<"]"<<endl;
 	cout<<"[info  ] numbins = ["<<numbins[0]<<"x"<<numbins[1]<<"]"<<endl;
 	cout<<ns<<endl;
 #endif
@@ -1219,7 +1219,7 @@ int cuspread3d_subprob(int nf1, int nf2, int nf3, int M, cufinufft_plan *d_plan,
 	}
 
 	for(int t=0; t<blksize; t++){
-		if(d_plan->opts.gpu_kerevalmeth){
+		if(d_plan->opts->gpu_kerevalmeth){
 			Spread_3d_Subprob_Horner<<<totalnumsubprob, 256,
 				sharedplanorysize>>>(d_kx, d_ky, d_kz, d_c+t*M, d_fw+t*nf1*nf2*nf3, 
 				M, ns, nf1, nf2, nf3, sigma, d_binstartpts, d_binsize, bin_size_x,
@@ -1241,7 +1241,7 @@ int cuspread3d_subprob(int nf1, int nf2, int nf3, int M, cufinufft_plan *d_plan,
 	cudaEventSynchronize(stop);
 	cudaEventElapsedTime(&milliseconds, start, stop);
 	printf("[time  ] \tKernel Spread_3d_Subprob (%d) \t%.3g ms\n", milliseconds, 
-		d_plan->opts.gpu_kerevalmeth);
+		d_plan->opts->gpu_kerevalmeth);
 #endif
 	return 0;
 }
@@ -1257,25 +1257,25 @@ int cuspread3d_subprob_prop(int nf1, int nf2, int nf3, int M,
 	dim3 threadsPerBlock;
 	dim3 blocks;
 
-	int maxsubprobsize=d_plan->opts.gpu_maxsubprobsize;
-	int o_bin_size_x = d_plan->opts.gpu_obinsizex;
-	int o_bin_size_y = d_plan->opts.gpu_obinsizey;
-	int o_bin_size_z = d_plan->opts.gpu_obinsizez;
+	int maxsubprobsize=d_plan->opts->gpu_maxsubprobsize;
+	int o_bin_size_x = d_plan->opts->gpu_obinsizex;
+	int o_bin_size_y = d_plan->opts->gpu_obinsizey;
+	int o_bin_size_z = d_plan->opts->gpu_obinsizez;
 	int numobins[3];
 	numobins[0] = ceil((FLT) nf1/o_bin_size_x);
 	numobins[1] = ceil((FLT) nf2/o_bin_size_y);
 	numobins[2] = ceil((FLT) nf3/o_bin_size_z);
 
-	int bin_size_x=d_plan->opts.gpu_binsizex;
-	int bin_size_y=d_plan->opts.gpu_binsizey;
-	int bin_size_z=d_plan->opts.gpu_binsizez;
+	int bin_size_x=d_plan->opts->gpu_binsizex;
+	int bin_size_y=d_plan->opts->gpu_binsizey;
+	int bin_size_z=d_plan->opts->gpu_binsizez;
 	int numbins[3];
 	numbins[0] = numobins[0]*o_bin_size_x/bin_size_x;
 	numbins[1] = numobins[1]*o_bin_size_y/bin_size_y;
 	numbins[2] = numobins[2]*o_bin_size_z/bin_size_z;
 #ifdef DEBUG
 	cout<<"[debug ] Dividing the uniform grids to bin size["
-		<<d_plan->opts.gpu_binsizex<<"x"<<d_plan->opts.gpu_binsizey<<"x"<<d_plan->opts.gpu_binsizez<<"]"<<endl;
+		<<d_plan->opts->gpu_binsizex<<"x"<<d_plan->opts->gpu_binsizey<<"x"<<d_plan->opts->gpu_binsizez<<"]"<<endl;
 	cout<<"[debug ] numbins = ["<<numobins[0]<<"x"<<numobins[1]<<"x"<<
 		numobins[2]<<"]"<<endl;
 #endif

@@ -13,11 +13,11 @@
 
 using namespace std;
 
-int cufinufft_interp2d(int ms, int mt, int nf1, int nf2, CPX* h_fw, int M, 
+int cufinufft_interp2d(int ms, int mt, int nf1, int nf2, CPX* h_fw, int M,
 	FLT *h_kx, FLT *h_ky, CPX *h_c, cufinufft_plan* d_plan)
 /*
-	This c function is written for only doing 2D interpolation. It includes 
-	allocating, transfering and freeing the memories on gpu. See 
+	This c function is written for only doing 2D interpolation. It includes
+	allocating, transfering and freeing the memories on gpu. See
 	test/interp_2d.cu for usage.
 
 	Melody Shih 07/25/19
@@ -63,19 +63,19 @@ int cufinufft_interp2d(int ms, int mt, int nf1, int nf2, CPX* h_fw, int M,
 	cudaEventElapsedTime(&milliseconds, start, stop);
 	printf("[time  ] Copy memory HtoD\t %.3g ms\n", milliseconds);
 #endif
-	if(d_plan->opts.gpu_method == 1){
+	if(d_plan->opts->gpu_method == 1){
 		ier = cuspread2d_nuptsdriven_prop(nf1,nf2,M,d_plan);
 		if(ier != 0 ){
-			printf("error: cuspread2d_subprob_prop, method(%d)\n", 
-				d_plan->opts.gpu_method);
+			printf("error: cuspread2d_subprob_prop, method(%d)\n",
+				d_plan->opts->gpu_method);
 			return 0;
 		}
 	}
-	if(d_plan->opts.gpu_method == 2){
+	if(d_plan->opts->gpu_method == 2){
 		ier = cuspread2d_subprob_prop(nf1,nf2,M,d_plan);
 		if(ier != 0 ){
-			printf("error: cuspread2d_subprob_prop, method(%d)\n", 
-				d_plan->opts.gpu_method);
+			printf("error: cuspread2d_subprob_prop, method(%d)\n",
+				d_plan->opts->gpu_method);
 			return 0;
 		}
 	}
@@ -85,7 +85,7 @@ int cufinufft_interp2d(int ms, int mt, int nf1, int nf2, CPX* h_fw, int M,
 	cudaEventRecord(stop);
 	cudaEventSynchronize(stop);
 	cudaEventElapsedTime(&milliseconds, start, stop);
-	printf("[time  ] Interp (%d)\t\t %.3g ms\n", d_plan->opts.gpu_method, 
+	printf("[time  ] Interp (%d)\t\t %.3g ms\n", d_plan->opts->gpu_method,
 		milliseconds);
 #endif
 	cudaEventRecord(start);
@@ -113,7 +113,7 @@ int cufinufft_interp2d(int ms, int mt, int nf1, int nf2, CPX* h_fw, int M,
 
 int cuinterp2d(cufinufft_plan* d_plan, int blksize)
 /*
-	A wrapper for different interpolation methods. 
+	A wrapper for different interpolation methods.
 
 	Methods available:
 	(1) Non-uniform points driven
@@ -131,7 +131,7 @@ int cuinterp2d(cufinufft_plan* d_plan, int blksize)
 	cudaEventCreate(&stop);
 
 	int ier;
-	switch(d_plan->opts.gpu_method)
+	switch(d_plan->opts->gpu_method)
 	{
 		case 1:
 			{
@@ -183,7 +183,7 @@ int cuinterp2d_nuptsdriven(int nf1, int nf2, int M, cufinufft_plan *d_plan,
 	int ns=d_plan->spopts.nspread;   // psi's support in terms of number of cells
 	FLT es_c=d_plan->spopts.ES_c;
 	FLT es_beta=d_plan->spopts.ES_beta;
-	FLT sigma=d_plan->opts.upsampfac;
+	FLT sigma=d_plan->opts->upsampfac;
 	int pirange=d_plan->spopts.pirange;
 	int *d_idxnupts=d_plan->idxnupts;
 
@@ -198,35 +198,35 @@ int cuinterp2d_nuptsdriven(int nf1, int nf2, int M, cufinufft_plan *d_plan,
 	blocks.y = 1;
 
 	cudaEventRecord(start);
-	if(d_plan->opts.gpu_kerevalmeth){
+	if(d_plan->opts->gpu_kerevalmeth){
 #if 0
 		cudaStream_t *streams = d_plan->streams;
-		int nstreams = d_plan->opts.gpu_nstreams;
+		int nstreams = d_plan->opts->gpu_nstreams;
 		for(int t=0; t<d_plan->ntransfcufftplan; t++){
-			Interp_2d_NUptsdriven_Horner<<<blocks, threadsPerBlock, 0, 
-				streams[t%nstreams]>>>(d_kx, d_ky, d_c+t*M, d_fw+t*nf1*nf2, M, 
+			Interp_2d_NUptsdriven_Horner<<<blocks, threadsPerBlock, 0,
+				streams[t%nstreams]>>>(d_kx, d_ky, d_c+t*M, d_fw+t*nf1*nf2, M,
 				ns, nf1, nf2, sigma);
 		}
-#else 
+#else
 		for(int t=0; t<blksize; t++){
-			Interp_2d_NUptsdriven_Horner<<<blocks, threadsPerBlock>>>(d_kx, 
-				d_ky, d_c+t*M, d_fw+t*nf1*nf2, M, ns, nf1, nf2, sigma, 
+			Interp_2d_NUptsdriven_Horner<<<blocks, threadsPerBlock>>>(d_kx,
+				d_ky, d_c+t*M, d_fw+t*nf1*nf2, M, ns, nf1, nf2, sigma,
 				d_idxnupts, pirange);
 		}
 #endif
 	}else{
 #if 0
 		cudaStream_t *streams = d_plan->streams;
-		int nstreams = d_plan->opts.gpu_nstreams;
+		int nstreams = d_plan->opts->gpu_nstreams;
 		for(int t=0; t<d_plan->ntransfcufftplan; t++){
 			Interp_2d_NUptsdriven<<<blocks, threadsPerBlock, 0, streams[t%nstreams]
-				>>>(d_kx, d_ky, d_c+t*M, d_fw+t*nf1*nf2, M, ns, nf1, nf2, es_c, 
+				>>>(d_kx, d_ky, d_c+t*M, d_fw+t*nf1*nf2, M, ns, nf1, nf2, es_c,
 				es_beta);
 		}
 #else
 		for(int t=0; t<blksize; t++){
-			Interp_2d_NUptsdriven<<<blocks, threadsPerBlock>>>(d_kx, d_ky, 
-				d_c+t*M, d_fw+t*nf1*nf2, M, ns, nf1, nf2, es_c, es_beta, 
+			Interp_2d_NUptsdriven<<<blocks, threadsPerBlock>>>(d_kx, d_ky,
+				d_c+t*M, d_fw+t*nf1*nf2, M, ns, nf1, nf2, es_c, es_beta,
 				d_idxnupts, pirange);
 		}
 #endif
@@ -236,8 +236,8 @@ int cuinterp2d_nuptsdriven(int nf1, int nf2, int M, cufinufft_plan *d_plan,
 	cudaEventRecord(stop);
 	cudaEventSynchronize(stop);
 	cudaEventElapsedTime(&milliseconds, start, stop);
-	printf("[time  ] \tKernel Interp_2d_NUptsdriven (%d)\t%.3g ms\n", 
-		milliseconds, d_plan->opts.gpu_kerevalmeth);
+	printf("[time  ] \tKernel Interp_2d_NUptsdriven (%d)\t%.3g ms\n",
+		milliseconds, d_plan->opts->gpu_kerevalmeth);
 #endif
 	return 0;
 }
@@ -255,17 +255,17 @@ int cuinterp2d_subprob(int nf1, int nf2, int M, cufinufft_plan *d_plan,
 	int ns=d_plan->spopts.nspread;   // psi's support in terms of number of cells
 	FLT es_c=d_plan->spopts.ES_c;
 	FLT es_beta=d_plan->spopts.ES_beta;
-	int maxsubprobsize=d_plan->opts.gpu_maxsubprobsize;
+	int maxsubprobsize=d_plan->opts->gpu_maxsubprobsize;
 
 	// assume that bin_size_x > ns/2;
-	int bin_size_x=d_plan->opts.gpu_binsizex;
-	int bin_size_y=d_plan->opts.gpu_binsizey;
+	int bin_size_x=d_plan->opts->gpu_binsizex;
+	int bin_size_y=d_plan->opts->gpu_binsizey;
 	int numbins[2];
 	numbins[0] = ceil((FLT) nf1/bin_size_x);
 	numbins[1] = ceil((FLT) nf2/bin_size_y);
 #ifdef INFO
 	cout<<"[info  ] Dividing the uniform grids to bin size["
-		<<d_plan->opts.gpu_binsizex<<"x"<<d_plan->opts.gpu_binsizey<<"]"<<endl;
+		<<d_plan->opts->gpu_binsizex<<"x"<<d_plan->opts->gpu_binsizey<<"]"<<endl;
 	cout<<"[info  ] numbins = ["<<numbins[0]<<"x"<<numbins[1]<<"]"<<endl;
 #endif
 
@@ -283,7 +283,7 @@ int cuinterp2d_subprob(int nf1, int nf2, int M, cufinufft_plan *d_plan,
 	int totalnumsubprob=d_plan->totalnumsubprob;
 	int pirange=d_plan->spopts.pirange;
 
-	FLT sigma=d_plan->opts.upsampfac;
+	FLT sigma=d_plan->opts->upsampfac;
 	cudaEventRecord(start);
 	size_t sharedplanorysize = (bin_size_x+2*ceil(ns/2.0))*(bin_size_y+2*
 		ceil(ns/2.0))*sizeof(CUCPX);
@@ -292,7 +292,7 @@ int cuinterp2d_subprob(int nf1, int nf2, int M, cufinufft_plan *d_plan,
 		return 1;
 	}
 
-	if(d_plan->opts.gpu_kerevalmeth){
+	if(d_plan->opts->gpu_kerevalmeth){
 		for(int t=0; t<blksize; t++){
 			Interp_2d_Subprob_Horner<<<totalnumsubprob, 256, sharedplanorysize>>>(
 					d_kx, d_ky, d_c+t*M,
@@ -321,8 +321,8 @@ int cuinterp2d_subprob(int nf1, int nf2, int M, cufinufft_plan *d_plan,
 	cudaEventRecord(stop);
 	cudaEventSynchronize(stop);
 	cudaEventElapsedTime(&milliseconds, start, stop);
-	printf("[time  ] \tKernel Interp_2d_Subprob (%d)\t\t%.3g ms\n", 
-		milliseconds, d_plan->opts.gpu_kerevalmeth);
+	printf("[time  ] \tKernel Interp_2d_Subprob (%d)\t\t%.3g ms\n",
+		milliseconds, d_plan->opts->gpu_kerevalmeth);
 #endif
 	return 0;
 }

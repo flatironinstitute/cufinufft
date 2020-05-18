@@ -109,10 +109,12 @@ int main(int argc, char* argv[])
 	printf("[time  ] \tWarm up GPU \t\t %.3g s\n", milliseconds/1000);
 
 	cufinufft_plan dplan;
+        nufft_opts opts;
+        dplan.opts = &opts;
 	int dim = 2;
 	ier=cufinufft_default_opts(type2, dim, dplan.opts);
-	dplan.opts.gpu_method=method;
-	dplan.opts.gpu_kerevalmeth=1;
+	dplan.opts->gpu_method=method;
+	dplan.opts->gpu_kerevalmeth=1;
 
 	int nmodes[3];
 	nmodes[0] = N1;

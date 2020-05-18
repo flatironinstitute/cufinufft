@@ -58,7 +58,7 @@ int cufinufft2d1_exec(CUCPX* d_c, CUCPX* d_fk, cufinufft_plan *d_plan)
 		cudaEventRecord(start);
 		ier = cuspread2d(d_plan,blksize);
 		if(ier != 0 ){
-			printf("error: cuspread2d, method(%d)\n", d_plan->opts.gpu_method);
+			printf("error: cuspread2d, method(%d)\n", d_plan->opts->gpu_method);
 			return 0;
 		}
 #ifdef TIME
@@ -66,7 +66,7 @@ int cufinufft2d1_exec(CUCPX* d_c, CUCPX* d_fk, cufinufft_plan *d_plan)
 		cudaEventSynchronize(stop);
 		cudaEventElapsedTime(&milliseconds, start, stop);
 		printf("[time  ] \tSpread (%d)\t\t %.3g s\n", milliseconds/1000, 
-			d_plan->opts.gpu_method);
+			d_plan->opts->gpu_method);
 #endif
 		// Step 2: FFT
 		cudaEventRecord(start);
@@ -150,7 +150,7 @@ int cufinufft2d2_exec(CUCPX* d_c, CUCPX* d_fk, cufinufft_plan *d_plan)
 		cudaEventRecord(start);
 		ier = cuinterp2d(d_plan, blksize);
 		if(ier != 0 ){
-			printf("error: cuinterp2d, method(%d)\n", d_plan->opts.gpu_method);
+			printf("error: cuinterp2d, method(%d)\n", d_plan->opts->gpu_method);
 			return 0;
 		}
 #ifdef TIME
@@ -158,7 +158,7 @@ int cufinufft2d2_exec(CUCPX* d_c, CUCPX* d_fk, cufinufft_plan *d_plan)
 		cudaEventSynchronize(stop);
 		cudaEventElapsedTime(&milliseconds, start, stop);
 		printf("[time  ] \tUnspread (%d)\t\t %.3g s\n", milliseconds/1000,
-			d_plan->opts.gpu_method);
+			d_plan->opts->gpu_method);
 #endif
 	}
 	return ier;

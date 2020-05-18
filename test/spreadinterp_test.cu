@@ -46,6 +46,8 @@ int main(int argc, char* argv[])
 	int dim=2;
 	int ns=std::ceil(-log10(tol/10.0));
 	cufinufft_plan dplan;
+        nufft_opts opts;
+        dplan.opts = &opts;
 	FLT upsampfac=2.0;
 	cout<<scientific<<setprecision(3);
 
@@ -138,16 +140,16 @@ int main(int argc, char* argv[])
 	}
 	ier = setup_spreader_for_nufft(dplan.spopts, tol, dplan.opts);
 
-	dplan.opts.upsampfac=upsampfac;
-	dplan.opts.gpu_method=method;
-	dplan.opts.gpu_kerevalmeth=1;
+	dplan.opts->upsampfac=upsampfac;
+	dplan.opts->gpu_method=method;
+	dplan.opts->gpu_kerevalmeth=1;
 	dplan.spopts.pirange=0;
 	switch(method){
 		case 2:
 		case 3:
 		{
-			dplan.opts.gpu_binsizex=32;
-			dplan.opts.gpu_binsizey=32;
+			dplan.opts->gpu_binsizex=32;
+			dplan.opts->gpu_binsizey=32;
 		}
 	}
 	timer.restart();
@@ -211,16 +213,16 @@ int main(int argc, char* argv[])
 	printf("\n[info  ] Type 2: Interpolation\n");
 	ier = cufinufft_default_opts(type2, dim, dplan.opts);
 	ier = setup_spreader_for_nufft(dplan.spopts, tol, dplan.opts);
-	dplan.opts.upsampfac=upsampfac;
-	dplan.opts.gpu_method=method;
-	dplan.opts.gpu_kerevalmeth=1;
+	dplan.opts->upsampfac=upsampfac;
+	dplan.opts->gpu_method=method;
+	dplan.opts->gpu_kerevalmeth=1;
 	dplan.spopts.pirange=0;
 	switch(method){
 		case 2:
 		case 3:
 		{
-			dplan.opts.gpu_binsizex=32;
-			dplan.opts.gpu_binsizey=32;
+			dplan.opts->gpu_binsizex=32;
+			dplan.opts->gpu_binsizey=32;
 		}
 	}
 

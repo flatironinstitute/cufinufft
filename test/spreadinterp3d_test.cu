@@ -46,6 +46,8 @@ int main(int argc, char* argv[])
 	int ier;
 	int ns=std::ceil(-log10(tol/10.0));
 	cufinufft_plan dplan;
+        nufft_opts opts;
+        dplan.opts = &opts;
 	FLT upsampfac=2.0;
 	cout<<scientific<<setprecision(6);
 
@@ -142,36 +144,36 @@ int main(int argc, char* argv[])
 		return 0;
 	}
 	ier = setup_spreader_for_nufft(dplan.spopts, tol, dplan.opts);
-	dplan.opts.upsampfac=upsampfac;
-	dplan.opts.gpu_method=method;
-	dplan.opts.gpu_kerevalmeth=1;
-	dplan.opts.gpu_sort=1;
+	dplan.opts->upsampfac=upsampfac;
+	dplan.opts->gpu_method=method;
+	dplan.opts->gpu_kerevalmeth=1;
+	dplan.opts->gpu_sort=1;
 	dplan.spopts.pirange=0;
-	switch(dplan.opts.gpu_method){
+	switch(dplan.opts->gpu_method){
 		case 4:
 		{
-			dplan.opts.gpu_binsizex=4;
-			dplan.opts.gpu_binsizey=4;
-			dplan.opts.gpu_binsizez=4;
-			dplan.opts.gpu_obinsizex=8;
-			dplan.opts.gpu_obinsizey=8;
-			dplan.opts.gpu_obinsizez=8;
-			dplan.opts.gpu_maxsubprobsize=1024;
+			dplan.opts->gpu_binsizex=4;
+			dplan.opts->gpu_binsizey=4;
+			dplan.opts->gpu_binsizez=4;
+			dplan.opts->gpu_obinsizex=8;
+			dplan.opts->gpu_obinsizey=8;
+			dplan.opts->gpu_obinsizez=8;
+			dplan.opts->gpu_maxsubprobsize=1024;
 		}
 		break;
 		case 2:
 		{
-			dplan.opts.gpu_binsizex=8;
-			dplan.opts.gpu_binsizey=8;
-			dplan.opts.gpu_binsizez=2;
-			dplan.opts.gpu_maxsubprobsize=1024;
+			dplan.opts->gpu_binsizex=8;
+			dplan.opts->gpu_binsizey=8;
+			dplan.opts->gpu_binsizez=2;
+			dplan.opts->gpu_maxsubprobsize=1024;
 		}
 		break;
 		case 1:
 		{
-			dplan.opts.gpu_binsizex=8;
-			dplan.opts.gpu_binsizey=8;
-			dplan.opts.gpu_binsizez=2;
+			dplan.opts->gpu_binsizex=8;
+			dplan.opts->gpu_binsizey=8;
+			dplan.opts->gpu_binsizez=2;
 		}
 		break;
 	}
@@ -277,36 +279,36 @@ int main(int argc, char* argv[])
 	}
 	ier = setup_spreader_for_nufft(dplan.spopts, tol, dplan.opts);
 	
-	dplan.opts.upsampfac=upsampfac;
-	dplan.opts.gpu_method=method;
-	dplan.opts.gpu_kerevalmeth=1;
-	dplan.opts.gpu_sort=1;
+	dplan.opts->upsampfac=upsampfac;
+	dplan.opts->gpu_method=method;
+	dplan.opts->gpu_kerevalmeth=1;
+	dplan.opts->gpu_sort=1;
 	dplan.spopts.pirange=0;
-	switch(dplan.opts.gpu_method){
+	switch(dplan.opts->gpu_method){
 		case 4:
 		{
-			dplan.opts.gpu_binsizex=4;
-			dplan.opts.gpu_binsizey=4;
-			dplan.opts.gpu_binsizez=4;
-			dplan.opts.gpu_obinsizex=8;
-			dplan.opts.gpu_obinsizey=8;
-			dplan.opts.gpu_obinsizez=8;
-			dplan.opts.gpu_maxsubprobsize=1024;
+			dplan.opts->gpu_binsizex=4;
+			dplan.opts->gpu_binsizey=4;
+			dplan.opts->gpu_binsizez=4;
+			dplan.opts->gpu_obinsizex=8;
+			dplan.opts->gpu_obinsizey=8;
+			dplan.opts->gpu_obinsizez=8;
+			dplan.opts->gpu_maxsubprobsize=1024;
 		}
 		break;
 		case 2:
 		{
-			dplan.opts.gpu_binsizex=8;
-			dplan.opts.gpu_binsizey=8;
-			dplan.opts.gpu_binsizez=2;
-			dplan.opts.gpu_maxsubprobsize=1024;
+			dplan.opts->gpu_binsizex=8;
+			dplan.opts->gpu_binsizey=8;
+			dplan.opts->gpu_binsizez=2;
+			dplan.opts->gpu_maxsubprobsize=1024;
 		}
 		break;
 		case 1:
 		{
-			dplan.opts.gpu_binsizex=8;
-			dplan.opts.gpu_binsizey=8;
-			dplan.opts.gpu_binsizez=2;
+			dplan.opts->gpu_binsizex=8;
+			dplan.opts->gpu_binsizey=8;
+			dplan.opts->gpu_binsizez=2;
 		}
 		break;
 	}
