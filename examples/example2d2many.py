@@ -30,16 +30,21 @@ kx = kx.astype(dtype)
 ky = ky.astype(dtype)
 fk = fk.astype(complex_dtype)
 
+# Transfer memory from host to device
+kx_gpu = to_gpu(kx)
+ky_gpu = to_gpu(ky)
+fk_gpu = to_gpu(fk)
+
 # Allocate memory for the nonuniform coefficients on the GPU.
 c_gpu = GPUArray((n_transf, M), dtype=complex_dtype)
 
 # Initialize the plan and set the points.
 plan = cufinufft(2, (N1, N2), n_transf, eps=eps, dtype=dtype)
-plan.set_pts(to_gpu(kx), to_gpu(ky))
+plan.set_pts(kx_gpu, ky_gpu)
 
 # Execute the plan, reading from the uniform grid fk c and storing the result
 # in c_gpu.
-plan.execute(c_gpu, to_gpu(fk))
+plan.execute(c_gpu, fk_gpu)
 
 # Retreive the result from the GPU.
 c = c_gpu.get()

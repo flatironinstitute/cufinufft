@@ -30,16 +30,21 @@ kx = kx.astype(dtype)
 ky = ky.astype(dtype)
 c = c.astype(complex_dtype)
 
+# Transfer memory from host to device
+kx_gpu = to_gpu(kx)
+ky_gpu = to_gpu(ky)
+c_gpu  = to_gpu(c)
+
 # Allocate memory for the uniform grid on the GPU.
 fk_gpu = GPUArray((n_transf, N1, N2), dtype=complex_dtype)
 
 # Initialize the plan and set the points.
 plan = cufinufft(1, (N1, N2), n_transf, eps=eps, dtype=dtype)
-plan.set_pts(to_gpu(kx), to_gpu(ky))
+plan.set_pts(kx_gpu, ky_gpu)
 
 # Execute the plan, reading from the strengths array c and storing the
 # result in fk_gpu.
-plan.execute(to_gpu(c), fk_gpu)
+plan.execute(c_gpu, fk_gpu)
 
 # Retreive the result from the GPU.
 fk = fk_gpu.get()
