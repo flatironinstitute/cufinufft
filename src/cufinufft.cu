@@ -10,6 +10,10 @@
 #include "cudeconvolve.h"
 #include "memtransfer.h"
 
+#include <multi_gpu_policy.h>
+
+
+
 using namespace std;
 
 void SETUP_BINSIZE(int type, int dim, cufinufft_opts *opts)
@@ -65,7 +69,7 @@ void SETUP_BINSIZE(int type, int dim, cufinufft_opts *opts)
 #ifdef __cplusplus
 extern "C" {
 #endif
-int CUFINUFFT_MAKEPLAN(int type, int dim, int *nmodes, int iflag,
+int _CUFINUFFT_MAKEPLAN(int type, int dim, int *nmodes, int iflag,
 		       int ntransf, FLT tol, int maxbatchsize,
 		       CUFINUFFT_PLAN *d_plan_ptr, cufinufft_opts *opts)
 /*
@@ -102,17 +106,6 @@ int CUFINUFFT_MAKEPLAN(int type, int dim, int *nmodes, int iflag,
 	doc updated, Barnett, 9/22/20, 2/5/21.
 */
 {
-        // Mult-GPU support: set the CUDA Device ID:
-        int orig_gpu_device_id;
-        cudaGetDevice(& orig_gpu_device_id);
-        if (opts == NULL) {
-            // options might not be supplied to this function => assume device
-            // 0 by default
-            cudaSetDevice(0);
-        } else {
-            cudaSetDevice(opts->gpu_device_id);
-        }
-
 	cudaEvent_t start, stop;
 	cudaEventCreate(&start);
 	cudaEventCreate(&stop);
@@ -125,16 +118,16 @@ int CUFINUFFT_MAKEPLAN(int type, int dim, int *nmodes, int iflag,
 	memset(d_plan, 0, sizeof(*d_plan));
 
 
-	/* If a user has not supplied their own options, assign defaults for them. */
-	if (opts==NULL){    // use default opts
-	  ier = CUFINUFFT_DEFAULT_OPTS(type, dim, &(d_plan->opts));
-	  if (ier != 0){
-	    printf("error: CUFINUFFT_DEFAULT_OPTS returned error %d.\n", ier);
-	    return ier;
-	  }
-	} else {    // or read from what's passed in
+	// /* If a user has not supplied their own options, assign defaults for them. */
+	// if (opts==NULL){    // use default opts
+	//  ier = CUFINUFFT_DEFAULT_OPTS(type, dim, &(d_plan->opts));
+	//  if (ier != 0){
+	//    printf("error: CUFINUFFT_DEFAULT_OPTS returned error %d.\n", ier);
+	//    return ier;
+	//  }
+	//} else {    // or read from what's passed in
 	  d_plan->opts = *opts;    // keep a deep copy; changing *opts now has no effect
-	}
+	//}
 
 	/* Setup Spreader */
 	ier = setup_spreader_for_nufft(d_plan->spopts,tol,d_plan->opts);
@@ -279,11 +272,67 @@ int CUFINUFFT_MAKEPLAN(int type, int dim, int *nmodes, int iflag,
 	if(dim > 2)
 		free(fwkerhalf3);
 
-        // Multi-GPU support: reset the device ID
-        cudaSetDevice(orig_gpu_device_id);
-
 	return ier;
 }
+
+int CUFINUFFT_MAKEPLAN(int type, int dim, int *nmodes, int iflag,
+		       int ntransf, FLT tol, int maxbatchsize,
+		       CUFINUFFT_PLAN *d_plan_ptr, cufinufft_opts *opts) {
+
+    int ier;
+    int default_options = 0;
+
+    // If a user has not supplied their own options, assign defaults for them.
+    if (opts == NULL) {    // use default opts
+        opts = (cufinufft_opts *) malloc(sizeof(cufinufft_opts));
+        ier = CUFINUFFT_DEFAULT_OPTS(type, dim, opts);
+        if (ier != 0) {
+            printf("error: CUFINUFFT_DEFAULT_OPTS returned error %d.\n", ier);
+            free(opts);
+            return ier;
+        }
+        default_options = 1;
+    }
+
+    // Mult-GPU support: get the CUDA Device ID:
+    int orig_dev_id, is_primary, is_clean;
+    ier = get_current_device(& orig_dev_id, & is_primary, & is_clean);
+    if (ier !=0) {
+        printf("Failed to get the device id");
+        return ier;
+    }
+
+    // Default behaviour: use existing contexts whenever possible
+
+    if (is_primary == 1 || is_clean == 1 || opts->gpu_force_primary_ctx == 1) {
+        cudaSetDevice(opts->gpu_device_id);
+        opts->gpu_primary_ctx = 1;
+    } else {
+        // Don't set the device -- we are relying on the user to manage the
+        // context instead
+        opts->gpu_device_id = orig_dev_id;
+        opts->gpu_primary_ctx = 0;
+    }
+
+    // ier = _CUFINUFFT_MAKEPLAN(
+    //             type, dim, nmodes, iflag,
+	// 	        ntransf, tol, maxbatchsize,
+	// 	        d_plan_ptr, opts
+    //         );
+
+    if (is_primary == 1 || is_clean == 1 || opts->gpu_force_primary_ctx == 1) {
+        cudaSetDevice(orig_dev_id);
+    }
+
+    if (default_options == 1) free(opts);
+    return ier;
+}
+
+
+
+
+
+
 
 int CUFINUFFT_SETPTS(int M, FLT* d_kx, FLT* d_ky, FLT* d_kz, int N, FLT *d_s,
 	FLT *d_t, FLT *d_u, CUFINUFFT_PLAN d_plan)
