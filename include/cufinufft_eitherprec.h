@@ -30,6 +30,7 @@
 /* Undefine things so we don't get warnings/errors later */
 #undef CUFINUFFT_DEFAULT_OPTS
 #undef CUFINUFFT_MAKEPLAN
+#undef __CUFINUFFT_MAKEPLAN
 #undef CUFINUFFT_SETPTS
 #undef CUFINUFFT_EXECUTE
 #undef CUFINUFFT_DESTROY
@@ -88,6 +89,7 @@
 
 #define CUFINUFFT_DEFAULT_OPTS cufinufftf_default_opts
 #define CUFINUFFT_MAKEPLAN cufinufftf_makeplan
+#define __CUFINUFFT_MAKEPLAN __cufinufftf_makeplan
 #define CUFINUFFT_SETPTS cufinufftf_setpts
 #define CUFINUFFT_EXECUTE cufinufftf_execute
 #define CUFINUFFT_DESTROY cufinufftf_destroy
@@ -145,6 +147,7 @@
 
 #define CUFINUFFT_DEFAULT_OPTS cufinufft_default_opts
 #define CUFINUFFT_MAKEPLAN cufinufft_makeplan
+#define __CUFINUFFT_MAKEPLAN __cufinufft_makeplan
 #define CUFINUFFT_SETPTS cufinufft_setpts
 #define CUFINUFFT_EXECUTE cufinufft_execute
 #define CUFINUFFT_DESTROY cufinufft_destroy

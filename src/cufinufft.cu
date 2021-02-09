@@ -69,7 +69,7 @@ void SETUP_BINSIZE(int type, int dim, cufinufft_opts *opts)
 #ifdef __cplusplus
 extern "C" {
 #endif
-int _CUFINUFFT_MAKEPLAN(int type, int dim, int *nmodes, int iflag,
+int __CUFINUFFT_MAKEPLAN(int type, int dim, int *nmodes, int iflag,
 		       int ntransf, FLT tol, int maxbatchsize,
 		       CUFINUFFT_PLAN *d_plan_ptr, cufinufft_opts *opts)
 /*
@@ -314,11 +314,11 @@ int CUFINUFFT_MAKEPLAN(int type, int dim, int *nmodes, int iflag,
         opts->gpu_primary_ctx = 0;
     }
 
-    // ier = _CUFINUFFT_MAKEPLAN(
-    //             type, dim, nmodes, iflag,
-	// 	        ntransf, tol, maxbatchsize,
-	// 	        d_plan_ptr, opts
-    //         );
+    ier = __CUFINUFFT_MAKEPLAN(
+                type, dim, nmodes, iflag,
+                ntransf, tol, maxbatchsize,
+                d_plan_ptr, opts
+            );
 
     if (is_primary == 1 || is_clean == 1 || opts->gpu_force_primary_ctx == 1) {
         cudaSetDevice(orig_dev_id);
