@@ -47,11 +47,17 @@
 #undef ALLOCGPUMEM1D_NUPTS
 #undef FREEGPUMEMORY1D
 #undef ALLOCGPUMEM2D_PLAN
+#undef __ALLOCGPUMEM2D_PLAN
 #undef ALLOCGPUMEM2D_NUPTS
+#undef __ALLOCGPUMEM2D_NUPTS
 #undef FREEGPUMEMORY2D
+#undef __FREEGPUMEMORY2D
 #undef ALLOCGPUMEM3D_PLAN
+#undef __ALLOCGPUMEM3D_PLAN
 #undef ALLOCGPUMEM3D_NUPTS
+#undef __ALLOCGPUMEM3D_NUPTS
 #undef FREEGPUMEMORY3D
+#undef __FREEGPUMEMORY3D
 /* spreading and interp only*/
 #undef CUFINUFFT_SPREAD2D
 #undef CUFINUFFT_SPREAD3D
@@ -109,11 +115,17 @@
 #define ALLOCGPUMEM1D_NUPTS allocgpumem1df_nupts
 #define FREEGPUMEMORY1D freegpumemory1df
 #define ALLOCGPUMEM2D_PLAN allocgpumem2df_plan
+#define __ALLOCGPUMEM2D_PLAN __allocgpumem2df_plan
 #define ALLOCGPUMEM2D_NUPTS allocgpumem2df_nupts
+#define __ALLOCGPUMEM2D_NUPTS __allocgpumem2df_nupts
 #define FREEGPUMEMORY2D freegpumemory2df
+#define __FREEGPUMEMORY2D __freegpumemory2df
 #define ALLOCGPUMEM3D_PLAN allocgpumem3df_plan
+#define __ALLOCGPUMEM3D_PLAN __allocgpumem3df_plan
 #define ALLOCGPUMEM3D_NUPTS allocgpumem3df_nupts
+#define __ALLOCGPUMEM3D_NUPTS __allocgpumem3df_nupts
 #define FREEGPUMEMORY3D freegpumemory3df
+#define __FREEGPUMEMORY3D __freegpumemory3df
 /* spreading and interp only*/
 #define CUFINUFFT_SPREAD2D cufinufft_spread2df
 #define CUFINUFFT_SPREAD3D cufinufft_spread3df
@@ -170,11 +182,17 @@
 #define ALLOCGPUMEM1D_NUPTS allocgpumem1d_nupts
 #define FREEGPUMEMORY1D freegpumemory1d
 #define ALLOCGPUMEM2D_PLAN allocgpumem2d_plan
+#define __ALLOCGPUMEM2D_PLAN __allocgpumem2d_plan
 #define ALLOCGPUMEM2D_NUPTS allocgpumem2d_nupts
+#define __ALLOCGPUMEM2D_NUPTS __allocgpumem2d_nupts
 #define FREEGPUMEMORY2D freegpumemory2d
+#define __FREEGPUMEMORY2D __freegpumemory2d
 #define ALLOCGPUMEM3D_PLAN allocgpumem3d_plan
+#define __ALLOCGPUMEM3D_PLAN __allocgpumem3d_plan
 #define ALLOCGPUMEM3D_NUPTS allocgpumem3d_nupts
+#define __ALLOCGPUMEM3D_NUPTS __allocgpumem3d_nupts
 #define FREEGPUMEMORY3D freegpumemory3d
+#define __FREEGPUMEMORY3D __freegpumemory3d
 /* spreading and interp only*/
 #define CUFINUFFT_SPREAD2D cufinufft_spread2d
 #define CUFINUFFT_SPREAD3D cufinufft_spread3d
