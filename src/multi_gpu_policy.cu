@@ -1,30 +1,31 @@
 #include <multi_gpu_policy.h>
+#include <cufinufft_opts.h>
 #include <cuda.h>
 
 
 
-CUresult get_current_device(int * i_dev, int * is_primary, int * is_clean) {
+CUresult get_current_device(CtxProfile * ctx_profile) {
 
     cudaError_t cuda_err;
     CUresult ierr;
 
     // GET current device bound to this thread (this will work for _both_ the
     // cuda runtim API and the cuda driver)
-    cuda_err = cudaGetDevice(i_dev);
+    cuda_err = cudaGetDevice(& ctx_profile->i_dev);
     if (cuda_err != cudaSuccess) {
-        * i_dev      = -1;
-        * is_primary = -1;
-        * is_clean   = -1;
+        ctx_profile->i_dev      = -1;
+        ctx_profile->is_primary = -1;
+        ctx_profile->is_clean   = -1;
         return CUDA_ERROR_INVALID_CONTEXT;
     }
 
     // GET the state of the primary context
     unsigned int flags;
     int active;
-    cuDevicePrimaryCtxGetState(* i_dev, & flags, & active);
+    cuDevicePrimaryCtxGetState(ctx_profile->i_dev, & flags, & active);
     if (active == 1){
-        * is_primary = 1;
-        * is_clean   = 0;
+        ctx_profile->is_primary = 1;
+        ctx_profile->is_clean   = 0;
         return CUDA_SUCCESS;
     }
 
@@ -36,8 +37,8 @@ CUresult get_current_device(int * i_dev, int * is_primary, int * is_clean) {
 
     ierr = cuCtxGetDevice(& device);
     if (ierr == CUDA_ERROR_INVALID_CONTEXT) {
-        * is_primary = 1;
-        * is_clean   = 1;
+        ctx_profile->is_primary = 1;
+        ctx_profile->is_clean   = 1;
     } else if (ierr != CUDA_SUCCESS) {
         return ierr;
     }
@@ -65,12 +66,23 @@ CUresult get_current_device(int * i_dev, int * is_primary, int * is_clean) {
         return ierr;
 
     if (primary_context == context) {
-        * is_primary = 1;
-        * is_clean   = 0;
+        ctx_profile->is_primary = 1;
+        ctx_profile->is_clean   = 0;
         return CUDA_SUCCESS;
     }
 
-    * is_primary = 0;
-    * is_clean   = 0;
+    ctx_profile->is_primary = 0;
+    ctx_profile->is_clean   = 0;
     return CUDA_SUCCESS;
+}
+
+
+
+int use_set_device(CtxProfile * ctx_profile, cufinufft_opts * opts) {
+
+    if (ctx_profile->is_primary == 1 || ctx_profile->is_clean == 1 || opts->gpu_force_primary_ctx == 1) {
+        return 1;
+    }
+
+    return 0;
 }

@@ -117,17 +117,7 @@ int __CUFINUFFT_MAKEPLAN(int type, int dim, int *nmodes, int iflag,
         // Zero out your struct, (sets all pointers to NULL)
 	memset(d_plan, 0, sizeof(*d_plan));
 
-
-	// /* If a user has not supplied their own options, assign defaults for them. */
-	// if (opts==NULL){    // use default opts
-	//  ier = CUFINUFFT_DEFAULT_OPTS(type, dim, &(d_plan->opts));
-	//  if (ier != 0){
-	//    printf("error: CUFINUFFT_DEFAULT_OPTS returned error %d.\n", ier);
-	//    return ier;
-	//  }
-	//} else {    // or read from what's passed in
-	  d_plan->opts = *opts;    // keep a deep copy; changing *opts now has no effect
-	//}
+	d_plan->opts = *opts;    // keep a deep copy; changing *opts now has no effect
 
 	/* Setup Spreader */
 	ier = setup_spreader_for_nufft(d_plan->spopts,tol,d_plan->opts);
@@ -295,8 +285,8 @@ int CUFINUFFT_MAKEPLAN(int type, int dim, int *nmodes, int iflag,
     }
 
     // Mult-GPU support: get the CUDA Device ID:
-    int orig_dev_id, is_primary, is_clean;
-    ier = get_current_device(& orig_dev_id, & is_primary, & is_clean);
+    CtxProfile ctx_profile;
+    ier = get_current_device(& ctx_profile);
     if (ier !=0) {
         printf("Failed to get the device id");
         return ier;
@@ -304,13 +294,13 @@ int CUFINUFFT_MAKEPLAN(int type, int dim, int *nmodes, int iflag,
 
     // Default behaviour: use existing contexts whenever possible
 
-    if (is_primary == 1 || is_clean == 1 || opts->gpu_force_primary_ctx == 1) {
+    if (use_set_device(& ctx_profile, opts) == 1) {
         cudaSetDevice(opts->gpu_device_id);
         opts->gpu_primary_ctx = 1;
     } else {
         // Don't set the device -- we are relying on the user to manage the
         // context instead
-        opts->gpu_device_id = orig_dev_id;
+        opts->gpu_device_id = ctx_profile.i_dev;
         opts->gpu_primary_ctx = 0;
     }
 
@@ -320,8 +310,8 @@ int CUFINUFFT_MAKEPLAN(int type, int dim, int *nmodes, int iflag,
                 d_plan_ptr, opts
             );
 
-    if (is_primary == 1 || is_clean == 1 || opts->gpu_force_primary_ctx == 1) {
-        cudaSetDevice(orig_dev_id);
+    if (use_set_device(& ctx_profile, opts) == 1) {
+        cudaSetDevice(ctx_profile.i_dev);
     }
 
     if (default_options == 1) free(opts);
