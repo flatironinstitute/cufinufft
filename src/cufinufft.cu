@@ -752,6 +752,8 @@ int CUFINUFFT_DEFAULT_OPTS(int type, int dim, cufinufft_opts *opts)
 
         // By default, only use device 0
         opts->gpu_device_id = 0;
+        opts->gpu_primary_ctx = 0;
+        opts->gpu_force_primary_ctx = 0;
 
 	return 0;
 }
