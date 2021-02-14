@@ -603,11 +603,6 @@ int __CUFINUFFT_DESTROY(CUFINUFFT_PLAN d_plan)
 
 */
 {
-        // Mult-GPU support: set the CUDA Device ID:
-        int orig_gpu_device_id;
-        cudaGetDevice(& orig_gpu_device_id);
-        cudaSetDevice(d_plan->opts.gpu_device_id);
-
 	cudaEvent_t start, stop;
 	cudaEventCreate(&start);
 	cudaEventCreate(&stop);
@@ -616,8 +611,6 @@ int __CUFINUFFT_DESTROY(CUFINUFFT_PLAN d_plan)
 
 	// Can't destroy a Null pointer.
 	if(!d_plan) {
-                // Multi-GPU support: reset the device ID
-                cudaSetDevice(orig_gpu_device_id);
 		return 1;
         }
 
@@ -655,8 +648,6 @@ int __CUFINUFFT_DESTROY(CUFINUFFT_PLAN d_plan)
 	/* set pointer to NULL now that we've hopefully free'd the memory. */
 	d_plan = NULL;
 
-        // Multi-GPU support: reset the device ID
-        cudaSetDevice(orig_gpu_device_id);
 	return 0;
 }
 
@@ -672,7 +663,7 @@ int CUFINUFFT_DESTROY(CUFINUFFT_PLAN d_plan){
         cudaSetDevice(d_plan->opts.gpu_device_id);
     }
 
-    ierr = CUFINUFFT_DESTROY(d_plan);
+    ierr = __CUFINUFFT_DESTROY(d_plan);
 
     if (policy_set_device(& d_plan->opts) == 1) {
         cudaSetDevice(orig_device);
