@@ -34,7 +34,9 @@
 #undef CUFINUFFT_SETPTS
 #undef __CUFINUFFT_SETPTS
 #undef CUFINUFFT_EXECUTE
+#undef __CUFINUFFT_EXECUTE
 #undef CUFINUFFT_DESTROY
+#undef __CUFINUFFT_DESTROY
 #undef CUFINUFFT2D1_EXEC
 #undef CUFINUFFT2D2_EXEC
 #undef CUFINUFFT3D1_EXEC
@@ -94,7 +96,9 @@
 #define CUFINUFFT_SETPTS cufinufftf_setpts
 #define __CUFINUFFT_SETPTS __cufinufftf_setpts
 #define CUFINUFFT_EXECUTE cufinufftf_execute
+#define __CUFINUFFT_EXECUTE __cufinufftf_execute
 #define CUFINUFFT_DESTROY cufinufftf_destroy
+#define __CUFINUFFT_DESTROY __cufinufftf_destroy
 #define CUFINUFFT2D1_EXEC cufinufftf2d1_exec
 #define CUFINUFFT2D2_EXEC cufinufftf2d2_exec
 #define CUFINUFFT3D1_EXEC cufinufftf3d1_exec
@@ -153,7 +157,9 @@
 #define CUFINUFFT_SETPTS cufinufft_setpts
 #define __CUFINUFFT_SETPTS __cufinufft_setpts
 #define CUFINUFFT_EXECUTE cufinufft_execute
+#define __CUFINUFFT_EXECUTE __cufinufft_execute
 #define CUFINUFFT_DESTROY cufinufft_destroy
+#define __CUFINUFFT_DESTROY __cufinufft_destroy
 #define CUFINUFFT2D1_EXEC cufinufft2d1_exec
 #define CUFINUFFT2D2_EXEC cufinufft2d2_exec
 #define CUFINUFFT3D1_EXEC cufinufft3d1_exec
@@ -285,7 +291,9 @@ int CUFINUFFT_SETPTS(int M, FLT* h_kx, FLT* h_ky, FLT* h_kz, int N, FLT *h_s,
 int __CUFINUFFT_SETPTS(int M, FLT* h_kx, FLT* h_ky, FLT* h_kz, int N, FLT *h_s,
 	FLT *h_t, FLT *h_u, CUFINUFFT_PLAN d_plan);
 int CUFINUFFT_EXECUTE(CUCPX* h_c, CUCPX* h_fk, CUFINUFFT_PLAN d_plan);
+int __CUFINUFFT_EXECUTE(CUCPX* h_c, CUCPX* h_fk, CUFINUFFT_PLAN d_plan);
 int CUFINUFFT_DESTROY(CUFINUFFT_PLAN d_plan);
+int __CUFINUFFT_DESTROY(CUFINUFFT_PLAN d_plan);
 #ifdef __cplusplus
 }
 #endif

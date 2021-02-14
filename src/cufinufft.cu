@@ -505,13 +505,12 @@ int CUFINUFFT_SETPTS(int M, FLT* d_kx, FLT* d_ky, FLT* d_kz, int N, FLT *d_s,
         cudaSetDevice(orig_device);
     }
 
-
     return ierr;
 }
 
 
 
-int CUFINUFFT_EXECUTE(CUCPX* d_c, CUCPX* d_fk, CUFINUFFT_PLAN d_plan)
+int __CUFINUFFT_EXECUTE(CUCPX* d_c, CUCPX* d_fk, CUFINUFFT_PLAN d_plan)
 /*
 	"exec" stage:
 
@@ -533,11 +532,6 @@ int CUFINUFFT_EXECUTE(CUCPX* d_c, CUCPX* d_fk, CUFINUFFT_PLAN d_plan)
 	Melody Shih 07/25/19; Barnett 2/5/21.
 */
 {
-        // Mult-GPU support: set the CUDA Device ID:
-        int orig_gpu_device_id;
-        cudaGetDevice(& orig_gpu_device_id);
-        cudaSetDevice(d_plan->opts.gpu_device_id);
-
 	int ier;
 	int type=d_plan->type;
 	switch(d_plan->dim)
@@ -574,13 +568,32 @@ int CUFINUFFT_EXECUTE(CUCPX* d_c, CUCPX* d_fk, CUFINUFFT_PLAN d_plan)
 		break;
 	}
 
-        // Multi-GPU support: reset the device ID
-        cudaSetDevice(orig_gpu_device_id);
-
 	return ier;
 }
 
-int CUFINUFFT_DESTROY(CUFINUFFT_PLAN d_plan)
+
+int CUFINUFFT_EXECUTE(CUCPX* d_c, CUCPX* d_fk, CUFINUFFT_PLAN d_plan) {
+
+    int ierr;
+    int orig_device;
+
+    if (policy_set_device(& d_plan->opts) == 1) {
+        cudaGetDevice(& orig_device);
+        cudaSetDevice(d_plan->opts.gpu_device_id);
+    }
+
+    ierr = __CUFINUFFT_EXECUTE(d_c, d_fk, d_plan);
+
+    if (policy_set_device(& d_plan->opts) == 1) {
+        cudaSetDevice(orig_device);
+    }
+
+    return ierr;
+}
+
+
+
+int __CUFINUFFT_DESTROY(CUFINUFFT_PLAN d_plan)
 /*
 	"destroy" stage:
 
@@ -646,6 +659,29 @@ int CUFINUFFT_DESTROY(CUFINUFFT_PLAN d_plan)
         cudaSetDevice(orig_gpu_device_id);
 	return 0;
 }
+
+
+int CUFINUFFT_DESTROY(CUFINUFFT_PLAN d_plan){
+    
+
+    int ierr;
+    int orig_device;
+
+    if (policy_set_device(& d_plan->opts) == 1) {
+        cudaGetDevice(& orig_device);
+        cudaSetDevice(d_plan->opts.gpu_device_id);
+    }
+
+    ierr = CUFINUFFT_DESTROY(d_plan);
+
+    if (policy_set_device(& d_plan->opts) == 1) {
+        cudaSetDevice(orig_device);
+    }
+
+    return ierr;
+}
+
+
 
 int CUFINUFFT_DEFAULT_OPTS(int type, int dim, cufinufft_opts *opts)
 /*
