@@ -265,6 +265,7 @@ int __CUFINUFFT_MAKEPLAN(int type, int dim, int *nmodes, int iflag,
 	return ier;
 }
 
+
 int CUFINUFFT_MAKEPLAN(int type, int dim, int *nmodes, int iflag,
 		       int ntransf, FLT tol, int maxbatchsize,
 		       CUFINUFFT_PLAN *d_plan_ptr, cufinufft_opts *opts) {
@@ -284,7 +285,7 @@ int CUFINUFFT_MAKEPLAN(int type, int dim, int *nmodes, int iflag,
         default_options = 1;
     }
 
-    // Mult-GPU support: get the CUDA Device ID:
+    // Mult-GPU support: get the state of contexts on the Device
     CtxProfile ctx_profile;
     ier = get_current_device(& ctx_profile);
     if (ier !=0) {
@@ -320,11 +321,7 @@ int CUFINUFFT_MAKEPLAN(int type, int dim, int *nmodes, int iflag,
 
 
 
-
-
-
-
-int CUFINUFFT_SETPTS(int M, FLT* d_kx, FLT* d_ky, FLT* d_kz, int N, FLT *d_s,
+int __CUFINUFFT_SETPTS(int M, FLT* d_kx, FLT* d_ky, FLT* d_kz, int N, FLT *d_s,
 	FLT *d_t, FLT *d_u, CUFINUFFT_PLAN d_plan)
 /*
 	"setNUpts" stage:
@@ -356,12 +353,6 @@ int CUFINUFFT_SETPTS(int M, FLT* d_kx, FLT* d_ky, FLT* d_kz, int N, FLT *d_s,
 	Melody Shih 07/25/19; Barnett 2/5/21.
 */
 {
-        // Mult-GPU support: set the CUDA Device ID:
-        int orig_gpu_device_id;
-        cudaGetDevice(& orig_gpu_device_id);
-        cudaSetDevice(d_plan->opts.gpu_device_id);
-
-
 	int nf1 = d_plan->nf1;
 	int nf2 = d_plan->nf2;
 	int nf3 = d_plan->nf3;
@@ -427,9 +418,6 @@ int CUFINUFFT_SETPTS(int M, FLT* d_kx, FLT* d_ky, FLT* d_kz, int N, FLT *d_s,
 					printf("error: cuspread2d_nupts_prop, method(%d)\n",
 						d_plan->opts.gpu_method);
 
-                                        // Multi-GPU support: reset the device ID
-                                        cudaSetDevice(orig_gpu_device_id);
-
 					return 1;
 				}
 			}
@@ -439,9 +427,6 @@ int CUFINUFFT_SETPTS(int M, FLT* d_kx, FLT* d_ky, FLT* d_kz, int N, FLT *d_s,
 					printf("error: cuspread2d_subprob_prop, method(%d)\n",
 						d_plan->opts.gpu_method);
 
-                                        // Multi-GPU support: reset the device ID
-                                        cudaSetDevice(orig_gpu_device_id);
-
 					return 1;
 				}
 			}
@@ -450,9 +435,6 @@ int CUFINUFFT_SETPTS(int M, FLT* d_kx, FLT* d_ky, FLT* d_kz, int N, FLT *d_s,
 				if(ier != 0 ){
 					printf("error: cuspread2d_paul_prop, method(%d)\n",
 						d_plan->opts.gpu_method);
-
-                                        // Multi-GPU support: reset the device ID
-                                        cudaSetDevice(orig_gpu_device_id);
 
 					return 1;
 				}
@@ -467,9 +449,6 @@ int CUFINUFFT_SETPTS(int M, FLT* d_kx, FLT* d_ky, FLT* d_kz, int N, FLT *d_s,
 					printf("error: cuspread3d_blockgather_prop, method(%d)\n",
 						d_plan->opts.gpu_method);
 
-                                        // Multi-GPU support: reset the device ID
-                                        cudaSetDevice(orig_gpu_device_id);
-
 					return ier;
 				}
 			}
@@ -479,9 +458,6 @@ int CUFINUFFT_SETPTS(int M, FLT* d_kx, FLT* d_ky, FLT* d_kz, int N, FLT *d_s,
 					printf("error: cuspread3d_nuptsdriven_prop, method(%d)\n",
 						d_plan->opts.gpu_method);
 
-                                        // Multi-GPU support: reset the device ID
-                                        cudaSetDevice(orig_gpu_device_id);
-
 					return ier;
 				}
 			}
@@ -490,9 +466,6 @@ int CUFINUFFT_SETPTS(int M, FLT* d_kx, FLT* d_ky, FLT* d_kz, int N, FLT *d_s,
 				if(ier != 0 ){
 					printf("error: cuspread3d_subprob_prop, method(%d)\n",
 						d_plan->opts.gpu_method);
-
-                                        // Multi-GPU support: reset the device ID
-                                        cudaSetDevice(orig_gpu_device_id);
 
 					return ier;
 				}
@@ -508,11 +481,35 @@ int CUFINUFFT_SETPTS(int M, FLT* d_kx, FLT* d_ky, FLT* d_kz, int N, FLT *d_s,
 		milliseconds/1000);
 #endif
 
-        // Multi-GPU support: reset the device ID
-        cudaSetDevice(orig_gpu_device_id);
-
 	return 0;
 }
+
+
+int CUFINUFFT_SETPTS(int M, FLT* d_kx, FLT* d_ky, FLT* d_kz, int N, FLT *d_s,
+	FLT *d_t, FLT *d_u, CUFINUFFT_PLAN d_plan) {
+
+    int ierr;
+    int orig_device;
+
+    if (policy_set_device(& d_plan->opts) == 1) {
+        cudaGetDevice(& orig_device);
+        cudaSetDevice(d_plan->opts.gpu_device_id);
+    }
+
+    ierr = __CUFINUFFT_SETPTS(
+                M, d_kx, d_ky, d_kz, N, d_s,
+	        d_t, d_u, d_plan
+            );
+
+    if (policy_set_device(& d_plan->opts) == 1) {
+        cudaSetDevice(orig_device);
+    }
+
+
+    return ierr;
+}
+
+
 
 int CUFINUFFT_EXECUTE(CUCPX* d_c, CUCPX* d_fk, CUFINUFFT_PLAN d_plan)
 /*

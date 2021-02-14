@@ -86,3 +86,9 @@ int use_set_device(CtxProfile * ctx_profile, cufinufft_opts * opts) {
 
     return 0;
 }
+
+
+
+int policy_set_device(cufinufft_opts * opts) {
+    return opts->gpu_primary_ctx;
+}

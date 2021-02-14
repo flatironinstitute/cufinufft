@@ -16,5 +16,6 @@ typedef struct CtxProfile {
 
 CUresult get_current_device(CtxProfile * ctx_profile);
 int use_set_device(CtxProfile * ctx_profile, cufinufft_opts * opts);
+int policy_set_device(cufinufft_opts * opts);
 
 #endif
