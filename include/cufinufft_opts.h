@@ -23,6 +23,8 @@ typedef struct cufinufft_opts {   // see cufinufft_default_opts() for defaults
 
 	/* multi-gpu support */
 	int gpu_device_id;
+        int gpu_primary_ctx;
+        int gpu_force_primary_ctx;
 } cufinufft_opts;
 
 #endif
