@@ -30,9 +30,13 @@
 /* Undefine things so we don't get warnings/errors later */
 #undef CUFINUFFT_DEFAULT_OPTS
 #undef CUFINUFFT_MAKEPLAN
+#undef __CUFINUFFT_MAKEPLAN
 #undef CUFINUFFT_SETPTS
+#undef __CUFINUFFT_SETPTS
 #undef CUFINUFFT_EXECUTE
+#undef __CUFINUFFT_EXECUTE
 #undef CUFINUFFT_DESTROY
+#undef __CUFINUFFT_DESTROY
 #undef CUFINUFFT2D1_EXEC
 #undef CUFINUFFT2D2_EXEC
 #undef CUFINUFFT3D1_EXEC
@@ -43,11 +47,17 @@
 #undef ALLOCGPUMEM1D_NUPTS
 #undef FREEGPUMEMORY1D
 #undef ALLOCGPUMEM2D_PLAN
+#undef __ALLOCGPUMEM2D_PLAN
 #undef ALLOCGPUMEM2D_NUPTS
+#undef __ALLOCGPUMEM2D_NUPTS
 #undef FREEGPUMEMORY2D
+#undef __FREEGPUMEMORY2D
 #undef ALLOCGPUMEM3D_PLAN
+#undef __ALLOCGPUMEM3D_PLAN
 #undef ALLOCGPUMEM3D_NUPTS
+#undef __ALLOCGPUMEM3D_NUPTS
 #undef FREEGPUMEMORY3D
+#undef __FREEGPUMEMORY3D
 /* spreading and interp only*/
 #undef CUFINUFFT_SPREAD2D
 #undef CUFINUFFT_SPREAD3D
@@ -88,9 +98,13 @@
 
 #define CUFINUFFT_DEFAULT_OPTS cufinufftf_default_opts
 #define CUFINUFFT_MAKEPLAN cufinufftf_makeplan
+#define __CUFINUFFT_MAKEPLAN __cufinufftf_makeplan
 #define CUFINUFFT_SETPTS cufinufftf_setpts
+#define __CUFINUFFT_SETPTS __cufinufftf_setpts
 #define CUFINUFFT_EXECUTE cufinufftf_execute
+#define __CUFINUFFT_EXECUTE __cufinufftf_execute
 #define CUFINUFFT_DESTROY cufinufftf_destroy
+#define __CUFINUFFT_DESTROY __cufinufftf_destroy
 #define CUFINUFFT2D1_EXEC cufinufftf2d1_exec
 #define CUFINUFFT2D2_EXEC cufinufftf2d2_exec
 #define CUFINUFFT3D1_EXEC cufinufftf3d1_exec
@@ -101,11 +115,17 @@
 #define ALLOCGPUMEM1D_NUPTS allocgpumem1df_nupts
 #define FREEGPUMEMORY1D freegpumemory1df
 #define ALLOCGPUMEM2D_PLAN allocgpumem2df_plan
+#define __ALLOCGPUMEM2D_PLAN __allocgpumem2df_plan
 #define ALLOCGPUMEM2D_NUPTS allocgpumem2df_nupts
+#define __ALLOCGPUMEM2D_NUPTS __allocgpumem2df_nupts
 #define FREEGPUMEMORY2D freegpumemory2df
+#define __FREEGPUMEMORY2D __freegpumemory2df
 #define ALLOCGPUMEM3D_PLAN allocgpumem3df_plan
+#define __ALLOCGPUMEM3D_PLAN __allocgpumem3df_plan
 #define ALLOCGPUMEM3D_NUPTS allocgpumem3df_nupts
+#define __ALLOCGPUMEM3D_NUPTS __allocgpumem3df_nupts
 #define FREEGPUMEMORY3D freegpumemory3df
+#define __FREEGPUMEMORY3D __freegpumemory3df
 /* spreading and interp only*/
 #define CUFINUFFT_SPREAD2D cufinufft_spread2df
 #define CUFINUFFT_SPREAD3D cufinufft_spread3df
@@ -145,9 +165,13 @@
 
 #define CUFINUFFT_DEFAULT_OPTS cufinufft_default_opts
 #define CUFINUFFT_MAKEPLAN cufinufft_makeplan
+#define __CUFINUFFT_MAKEPLAN __cufinufft_makeplan
 #define CUFINUFFT_SETPTS cufinufft_setpts
+#define __CUFINUFFT_SETPTS __cufinufft_setpts
 #define CUFINUFFT_EXECUTE cufinufft_execute
+#define __CUFINUFFT_EXECUTE __cufinufft_execute
 #define CUFINUFFT_DESTROY cufinufft_destroy
+#define __CUFINUFFT_DESTROY __cufinufft_destroy
 #define CUFINUFFT2D1_EXEC cufinufft2d1_exec
 #define CUFINUFFT2D2_EXEC cufinufft2d2_exec
 #define CUFINUFFT3D1_EXEC cufinufft3d1_exec
@@ -158,11 +182,17 @@
 #define ALLOCGPUMEM1D_NUPTS allocgpumem1d_nupts
 #define FREEGPUMEMORY1D freegpumemory1d
 #define ALLOCGPUMEM2D_PLAN allocgpumem2d_plan
+#define __ALLOCGPUMEM2D_PLAN __allocgpumem2d_plan
 #define ALLOCGPUMEM2D_NUPTS allocgpumem2d_nupts
+#define __ALLOCGPUMEM2D_NUPTS __allocgpumem2d_nupts
 #define FREEGPUMEMORY2D freegpumemory2d
+#define __FREEGPUMEMORY2D __freegpumemory2d
 #define ALLOCGPUMEM3D_PLAN allocgpumem3d_plan
+#define __ALLOCGPUMEM3D_PLAN __allocgpumem3d_plan
 #define ALLOCGPUMEM3D_NUPTS allocgpumem3d_nupts
+#define __ALLOCGPUMEM3D_NUPTS __allocgpumem3d_nupts
 #define FREEGPUMEMORY3D freegpumemory3d
+#define __FREEGPUMEMORY3D __freegpumemory3d
 /* spreading and interp only*/
 #define CUFINUFFT_SPREAD2D cufinufft_spread2d
 #define CUFINUFFT_SPREAD3D cufinufft_spread3d
@@ -271,10 +301,17 @@ int CUFINUFFT_DEFAULT_OPTS(int type, int dim, cufinufft_opts *opts);
 int CUFINUFFT_MAKEPLAN(int type, int dim, int *n_modes, int iflag,
 		       int ntransf, FLT tol, int maxbatchsize,
 		       CUFINUFFT_PLAN *d_plan_ptr, cufinufft_opts *opts);
+int __CUFINUFFT_MAKEPLAN(int type, int dim, int *n_modes, int iflag,
+		       int ntransf, FLT tol, int maxbatchsize,
+		       CUFINUFFT_PLAN *d_plan_ptr, cufinufft_opts *opts);
 int CUFINUFFT_SETPTS(int M, FLT* h_kx, FLT* h_ky, FLT* h_kz, int N, FLT *h_s,
 	FLT *h_t, FLT *h_u, CUFINUFFT_PLAN d_plan);
+int __CUFINUFFT_SETPTS(int M, FLT* h_kx, FLT* h_ky, FLT* h_kz, int N, FLT *h_s,
+	FLT *h_t, FLT *h_u, CUFINUFFT_PLAN d_plan);
 int CUFINUFFT_EXECUTE(CUCPX* h_c, CUCPX* h_fk, CUFINUFFT_PLAN d_plan);
+int __CUFINUFFT_EXECUTE(CUCPX* h_c, CUCPX* h_fk, CUFINUFFT_PLAN d_plan);
 int CUFINUFFT_DESTROY(CUFINUFFT_PLAN d_plan);
+int __CUFINUFFT_DESTROY(CUFINUFFT_PLAN d_plan);
 #ifdef __cplusplus
 }
 #endif
