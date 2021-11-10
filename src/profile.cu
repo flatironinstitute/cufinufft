@@ -1,5 +1,7 @@
 #include <profile.h>
+#ifndef USE_HIP
 #include <nvToolsExt.h>
+#endif
 #include <cstdio>
 
 
@@ -7,6 +9,7 @@ const uint32_t colors[] = { 0x0000ff00, 0x000000ff, 0x00ffff00, 0x00ff00ff,
 	0x0000ffff, 0x00ff0000, 0x00ffffff }; 
 const int num_colors = sizeof(colors)/sizeof(uint32_t);
 
+#ifndef USE_HIP
 #define PUSH_RANGE(name,cid) { \
         int color_id = cid; \
         color_id = color_id%num_colors;\
@@ -20,13 +23,18 @@ const int num_colors = sizeof(colors)/sizeof(uint32_t);
         nvtxRangePushEx(&eventAttrib); \
 }
 #define POP_RANGE nvtxRangePop();
+#endif
 
 CudaTracer::CudaTracer(const char* name, int cid) 
 {
+#ifndef USE_HIP
     PUSH_RANGE(name,cid);
+#endif
 }
 
 CudaTracer::~CudaTracer() {
+#ifndef USE_HIP
     POP_RANGE;
+#endif
 }
 

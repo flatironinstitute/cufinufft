@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include <complex>          // C++ type complex
-#include <cuComplex.h>
+#include "cuda_hip_wrapper.h"
 #include "dataTypes.h"
 
 // fraction growth cut-off in arraywidcen(), to decide if translate in type-3

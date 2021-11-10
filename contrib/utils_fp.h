@@ -15,7 +15,7 @@
 #include <stdint.h>
 
 #include <complex>          // C++ type complex
-#include <cuComplex.h>
+#include "cuda_hip_wrapper.h"
 #include "dataTypes.h"
 
 

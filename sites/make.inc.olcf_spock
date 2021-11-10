@@ -1,0 +1,7 @@
+# CC := hipcc
+CXX := hipcc
+NVCC := hipcc
+NVARCH := --amdgpu-target=gfx908
+CXXFLAGS += -DUSE_HIP -Icontrib -I$(ROCM_PATH)/hipfft/include
+NVCCFLAGS := -std=c++14 -O3 $(NVARCH) $(CXXFLAGS)
+DEVFLAGS := -fPIC

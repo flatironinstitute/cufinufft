@@ -1,3 +1,4 @@
+#include "cuda_hip_wrapper.h"
 #include <helper_cuda.h>
 #include <iostream>
 #include <iomanip>
@@ -6,7 +7,6 @@
 #include <thrust/device_ptr.h>
 #include <thrust/scan.h>
 
-#include <cuComplex.h>
 #include "../cuspreadinterp.h"
 #include "../memtransfer.h"
 #include "../precision_independent.h"
