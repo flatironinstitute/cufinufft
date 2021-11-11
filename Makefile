@@ -64,7 +64,7 @@ ifdef NVCC_STUBS
     NVCC_LIBS_PATH += -L$(NVCC_STUBS)
 endif
 
-LIBS += -lm -lcudart -lstdc++ -lnvToolsExt -lcufft -lcuda
+LIBS ?= -lm -lcudart -lstdc++ -lnvToolsExt -lcufft -lcuda
 
 
 #############################################################
