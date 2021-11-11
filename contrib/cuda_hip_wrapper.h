@@ -8,17 +8,22 @@
 #include <hipfft.h>
 
 // cuda.h adapters
+#define cudaDeviceReset hipDeviceReset
 #define cudaDeviceSynchronize hipDeviceSynchronize
 #define cudaError_t hipError_t
 #define cudaEventCreate hipEventCreate
+#define cudaEventElapsedTime hipEventElapsedTime
 #define cudaEventRecord hipEventRecord
+#define cudaEventSynchronize hipEventSynchronize
 #define cudaEvent_t hipEvent_t
 #define cudaFree hipFree
+#define cudaFreeHost hipHostFree // hipFreeHost is deprecated
 #define cudaGetDevice hipGetDevice
 #define cudaGetErrorName hipGetErrorName
 #define cudaGetErrorString hipGetErrorString
 #define cudaGetLastError hipGetLastError
 #define cudaMalloc hipMalloc
+#define cudaMallocHost hipHostMalloc // hipMallocHost is deprecated
 #define cudaMemcpy hipMemcpy
 #define cudaMemcpyDeviceToHost hipMemcpyDeviceToHost
 #define cudaMemcpyHostToDevice hipMemcpyHostToDevice
@@ -57,6 +62,7 @@
 #define cufftExecC2C hipfftExecC2C
 #define cufftExecZ2Z hipfftExecZ2Z
 #define cufftHandle hipfftHandle
+#define cufftPlan1d hipfftPlan1d
 #define cufftPlanMany hipfftPlanMany
 #define cufftResult_t hipfftResult_t
 
