@@ -39,6 +39,7 @@
 #undef CUFINUFFT2D2_EXEC
 #undef CUFINUFFT3D1_EXEC
 #undef CUFINUFFT3D2_EXEC
+#undef CUFINUFFT3D3_EXEC
 #undef SETUP_BINSIZE
 /* memtransfer.h */
 #undef ALLOCGPUMEM1D_PLAN
@@ -110,6 +111,7 @@
 #define CUFINUFFT2D2_EXEC cufinufftf2d2_exec
 #define CUFINUFFT3D1_EXEC cufinufftf3d1_exec
 #define CUFINUFFT3D2_EXEC cufinufftf3d2_exec
+#define CUFINUFFT3D3_EXEC cufinufftf3d3_exec
 #define SETUP_BINSIZE setup_binsizef
 /* memtransfer.h */
 #define ALLOCGPUMEM1D_PLAN allocgpumem1df_plan
@@ -180,6 +182,7 @@
 #define CUFINUFFT2D2_EXEC cufinufft2d2_exec
 #define CUFINUFFT3D1_EXEC cufinufft3d1_exec
 #define CUFINUFFT3D2_EXEC cufinufft3d2_exec
+#define CUFINUFFT3D3_EXEC cufinufft3d3_exec
 #define SETUP_BINSIZE setup_binsize
 /* memtransfer.h */
 #define ALLOCGPUMEM1D_PLAN allocgpumem1d_plan
@@ -249,12 +252,14 @@ typedef struct CUFINUFFT_PLAN_S {
 	int nf1;
 	int nf2;
 	int nf3;
+	int N;
 	int ms;
 	int mt;
 	int mu;
 	int ntransf;
 	int maxbatchsize;
 	int iflag;
+	FLT tol;
 
 	int totalnumsubprob;
 	int byte_now;
@@ -268,6 +273,20 @@ typedef struct CUFINUFFT_PLAN_S {
 	CUCPX *c;
 	CUCPX *fw;
 	CUCPX *fk;
+
+	// type 3 specific
+	CUCPX *cpbatch;
+	CUCPX *prephase;
+	CUCPX *deconv;
+	FLT *s;
+	FLT *t;
+	FLT *u;
+
+	struct {
+		FLT X1,C1,D1,h1,gam1;  // x dim: X=halfwid C=center D=freqcen h,gam=rescale
+		FLT X2,C2,D2,h2,gam2;  // y
+		FLT X3,C3,D3,h3,gam3;  // z
+	} t3P;
 
 	// Arrays that used in subprob method
 	int *idxnupts;//length: #nupts, index of the nupts in the bin-sorted order
@@ -288,6 +307,9 @@ typedef struct CUFINUFFT_PLAN_S {
 
 	cufftHandle fftplan;
 	cudaStream_t *streams;
+
+	// inner plan required for type 3
+	CUFINUFFT_PLAN_S*  innert2plan;
 
 } CUFINUFFT_PLAN_S;
 
@@ -329,5 +351,6 @@ int CUFINUFFT2D2_EXEC(CUCPX* d_c, CUCPX* d_fk, CUFINUFFT_PLAN d_plan);
 // 3d
 int CUFINUFFT3D1_EXEC(CUCPX* d_c, CUCPX* d_fk, CUFINUFFT_PLAN d_plan);
 int CUFINUFFT3D2_EXEC(CUCPX* d_c, CUCPX* d_fk, CUFINUFFT_PLAN d_plan);
+int CUFINUFFT3D3_EXEC(CUCPX* d_c, CUCPX* d_fk, CUFINUFFT_PLAN d_plan);
 
 #endif

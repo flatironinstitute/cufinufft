@@ -79,7 +79,7 @@ int CUFINUFFT_SPREAD3D(int nf1, int nf2, int nf3,
 #endif
 
 	cudaEventRecord(start);
-	ier = CUSPREAD3D(d_plan, 1);
+	ier = CUSPREAD3D(d_plan, 1, d_plan->c, d_plan->fw);
 #ifdef TIME
 	cudaEventRecord(stop);
 	cudaEventSynchronize(stop);
@@ -98,7 +98,7 @@ int CUFINUFFT_SPREAD3D(int nf1, int nf2, int nf3,
 	return ier;
 }
 
-int CUSPREAD3D(CUFINUFFT_PLAN d_plan, int blksize)
+int CUSPREAD3D(CUFINUFFT_PLAN d_plan, int blksize, CUCPX* d_c, CUCPX* d_fw)
 /*
 	A wrapper for different spreading methods. 
 
@@ -125,7 +125,7 @@ int CUSPREAD3D(CUFINUFFT_PLAN d_plan, int blksize)
 		case 1:
 			{
 				cudaEventRecord(start);
-				ier = CUSPREAD3D_NUPTSDRIVEN(nf1, nf2, nf3, M, d_plan, blksize);
+				ier = CUSPREAD3D_NUPTSDRIVEN(nf1, nf2, nf3, d_c, M, d_fw, d_plan, blksize);
 				if(ier != 0 ){
 					cout<<"error: cnufftspread3d_gpu_subprob"<<endl;
 					return 1;
@@ -135,7 +135,7 @@ int CUSPREAD3D(CUFINUFFT_PLAN d_plan, int blksize)
 		case 2:
 			{
 				cudaEventRecord(start);
-				ier = CUSPREAD3D_SUBPROB(nf1, nf2, nf3, M, d_plan, blksize);
+				ier = CUSPREAD3D_SUBPROB(nf1, nf2, nf3, d_c, M, d_fw, d_plan, blksize);
 				if(ier != 0 ){
 					cout<<"error: cnufftspread3d_gpu_subprob"<<endl;
 					return 1;
@@ -145,7 +145,7 @@ int CUSPREAD3D(CUFINUFFT_PLAN d_plan, int blksize)
 		case 4:
 			{
 				cudaEventRecord(start);
-				ier = CUSPREAD3D_BLOCKGATHER(nf1, nf2, nf3, M, d_plan, blksize);
+				ier = CUSPREAD3D_BLOCKGATHER(nf1, nf2, nf3, d_c, M, d_fw, d_plan, blksize);
 				if(ier != 0 ){
 					cout<<"error: cnufftspread3d_gpu_subprob"<<endl;
 					return 1;
@@ -159,7 +159,7 @@ int CUSPREAD3D(CUFINUFFT_PLAN d_plan, int blksize)
 	return ier;
 }
 
-int CUSPREAD3D_NUPTSDRIVEN_PROP(int nf1, int nf2, int nf3, int M, 
+int CUSPREAD3D_NUPTSDRIVEN_PROP(int nf1, int nf2, int nf3, int M,
 	CUFINUFFT_PLAN d_plan)
 {
 	cudaEvent_t start, stop;
@@ -338,7 +338,7 @@ int CUSPREAD3D_NUPTSDRIVEN_PROP(int nf1, int nf2, int nf3, int M,
 	return 0;
 }
 
-int CUSPREAD3D_NUPTSDRIVEN(int nf1, int nf2, int nf3, int M, 
+int CUSPREAD3D_NUPTSDRIVEN(int nf1, int nf2, int nf3, CUCPX* d_c, int M, CUCPX* d_fw,
 	CUFINUFFT_PLAN d_plan, int blksize)
 {
 	cudaEvent_t start, stop;
@@ -358,8 +358,6 @@ int CUSPREAD3D_NUPTSDRIVEN(int nf1, int nf2, int nf3, int M,
 	FLT* d_kx = d_plan->kx;
 	FLT* d_ky = d_plan->ky;
 	FLT* d_kz = d_plan->kz;
-	CUCPX* d_c = d_plan->c;
-	CUCPX* d_fw = d_plan->fw;
 
 	threadsPerBlock.x = 16;
 	threadsPerBlock.y = 1;
@@ -390,7 +388,7 @@ int CUSPREAD3D_NUPTSDRIVEN(int nf1, int nf2, int nf3, int M,
 	return 0;
 }
 
-int CUSPREAD3D_BLOCKGATHER_PROP(int nf1, int nf2, int nf3, int M, 
+int CUSPREAD3D_BLOCKGATHER_PROP(int nf1, int nf2, int nf3, int M,
 	CUFINUFFT_PLAN d_plan)
 {
 	cudaEvent_t start, stop;
@@ -795,7 +793,7 @@ int CUSPREAD3D_BLOCKGATHER_PROP(int nf1, int nf2, int nf3, int M,
 	return 0;
 }
 
-int CUSPREAD3D_BLOCKGATHER(int nf1, int nf2, int nf3, int M, 
+int CUSPREAD3D_BLOCKGATHER(int nf1, int nf2, int nf3, CUCPX* d_c, int M, CUCPX* d_fw,
 	CUFINUFFT_PLAN d_plan, int blksize)
 {
 	cudaEvent_t start, stop;
@@ -835,8 +833,6 @@ int CUSPREAD3D_BLOCKGATHER(int nf1, int nf2, int nf3, int M,
 	FLT* d_kx = d_plan->kx;
 	FLT* d_ky = d_plan->ky;
 	FLT* d_kz = d_plan->kz;
-	CUCPX* d_c = d_plan->c;
-	CUCPX* d_fw = d_plan->fw;
 
 	int *d_binstartpts = d_plan->binstartpts;
 	int *d_subprobstartpts = d_plan->subprobstartpts;
@@ -888,7 +884,7 @@ int CUSPREAD3D_BLOCKGATHER(int nf1, int nf2, int nf3, int M,
 	return 0;
 }
 
-int CUSPREAD3D_SUBPROB_PROP(int nf1, int nf2, int nf3, int M, 
+int CUSPREAD3D_SUBPROB_PROP(int nf1, int nf2, int nf3, int M,
 	CUFINUFFT_PLAN d_plan)
 {
 	cudaEvent_t start, stop;
@@ -1133,8 +1129,8 @@ int CUSPREAD3D_SUBPROB_PROP(int nf1, int nf2, int nf3, int M,
 	return 0;
 }
 
-int CUSPREAD3D_SUBPROB(int nf1, int nf2, int nf3, int M, CUFINUFFT_PLAN d_plan,
-	int blksize)
+int CUSPREAD3D_SUBPROB(int nf1, int nf2, int nf3, CUCPX* d_c, int M, CUCPX* d_fw,
+		CUFINUFFT_PLAN d_plan, int blksize)
 {
 	cudaEvent_t start, stop;
 	cudaEventCreate(&start);
@@ -1161,8 +1157,6 @@ int CUSPREAD3D_SUBPROB(int nf1, int nf2, int nf3, int M, CUFINUFFT_PLAN d_plan,
 	FLT* d_kx = d_plan->kx;
 	FLT* d_ky = d_plan->ky;
 	FLT* d_kz = d_plan->kz;
-	CUCPX* d_c = d_plan->c;
-	CUCPX* d_fw = d_plan->fw;
 
 	int *d_binsize = d_plan->binsize;
 	int *d_binstartpts = d_plan->binstartpts;

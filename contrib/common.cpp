@@ -95,3 +95,44 @@ void onedim_fseries_kernel(BIGINT nf, FLT *fwkerhalf, SPREAD_OPTS opts)
     }
   }
 }
+
+
+void onedim_nuft_kernel(BIGINT nk, FLT *k, FLT *phihat, SPREAD_OPTS opts)
+/*
+  Approximates exact 1D Fourier transform of cnufftspread's real symmetric
+  kernel, directly via q-node quadrature on Euler-Fourier formula, exploiting
+  narrowness of kernel. Evaluates at set of arbitrary freqs k in [-pi,pi],
+  for a kernel with x measured in grid-spacings. (See previous routine for
+  FT definition).
+
+  Inputs:
+  nk - number of freqs
+  k - frequencies, dual to the kernel's natural argument, ie exp(i.k.z)
+       Note, z is in grid-point units, and k values must be in [-pi,pi] for
+       accuracy.
+  opts - spreading opts object, needed to eval kernel (must be already set up)
+
+  Outputs:
+  phihat - real Fourier transform evaluated at freqs (alloc for nk FLTs)
+
+  Barnett 2/8/17. openmp since cos slow 2/9/17
+ */
+{
+  FLT J2 = opts.nspread/2.0;        // J/2, half-width of ker z-support
+  // # quadr nodes in z (from 0 to J/2; reflections will be added)...
+  int q=(int)(2 + 2.0*J2);     // > pi/2 ratio.  cannot exceed MAX_NQUAD
+  FLT f[MAX_NQUAD]; double z[2*MAX_NQUAD],w[2*MAX_NQUAD];
+  legendre_compute_glr(2*q,z,w);        // only half the nodes used, eg on (0,1)
+  for (int n=0;n<q;++n) {
+    z[n] *= J2;                                    // quadr nodes for [0,J/2]
+    f[n] = J2*(FLT)w[n] * evaluate_kernel((FLT)z[n], opts);  // w/ quadr weights
+    //    printf("f[%d] = %.3g\n",n,f[n]);
+  }
+#pragma omp parallel for
+  for (BIGINT j=0;j<nk;++j) {          // loop along output array
+    FLT x = 0.0;                    // register
+    for (int n=0;n<q;++n) x += f[n] * 2*cos(k[j]*z[n]);  // pos & neg freq pair
+    phihat[j] = x;
+  }
+}  
+
