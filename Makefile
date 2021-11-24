@@ -21,19 +21,12 @@ NVCC ?= /usr/local/cuda/bin/nvcc
 
 # Developer-users are suggested to optimize NVARCH in their own make.inc, see:
 #   http://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/
-NVARCH ?= -arch=sm_70 \
-	  -gencode=arch=compute_35,code=sm_35 \
-	  -gencode=arch=compute_50,code=sm_50 \
-	  -gencode=arch=compute_52,code=sm_52 \
-	  -gencode=arch=compute_60,code=sm_60 \
-	  -gencode=arch=compute_61,code=sm_61 \
-	  -gencode=arch=compute_70,code=sm_70 \
-	  -gencode=arch=compute_75,code=sm_75 \
-	  -gencode=arch=compute_75,code=compute_75
+NVARCH ?= -gencode=arch=compute_60,code=sm_60 \
+	  -gencode=arch=compute_61,code=sm_61
 
-CFLAGS    ?= -fPIC -O3 -funroll-loops -march=native
+CFLAGS    ?= -fPIC -g
 CXXFLAGS  ?= $(CFLAGS) -std=c++14
-NVCCFLAGS ?= -std=c++14 -ccbin=$(CXX) -O3 $(NVARCH) -Wno-deprecated-gpu-targets \
+NVCCFLAGS ?= -ccbin=$(CXX) $(NVARCH) -Wno-deprecated-gpu-targets \
 	     --default-stream per-thread -Xcompiler "$(CXXFLAGS)"
 
 # For debugging, tell nvcc to add symbols to host and device code respectively,
@@ -130,6 +123,7 @@ libtest: lib $(BINDIR)/cufinufft2d1_test \
 	$(BINDIR)/cufinufft2d1nupts_test_32 \
 	$(BINDIR)/cufinufft3d1_test \
 	$(BINDIR)/cufinufft3d2_test \
+	$(BINDIR)/cufinufft3d3_test \
 	$(BINDIR)/cufinufft3d1_test_32 \
 	$(BINDIR)/cufinufft3d2_test_32 \
 	$(BINDIR)/cufinufft2d2api_test \
@@ -295,9 +289,11 @@ check3D_64: spreadtest libtest
 	bin/cufinufft3d1_test 1 16 16 16 4096 1e-3
 	bin/cufinufft3d1_test 4 15 15 15 2048 1e-3
 	bin/cufinufft3d2_test 1 16 16 16 4096 1e-3
+	bin/cufinufft3d3_test 1 2048 4096 1e-3
 	bin/cufinufft3d1_test 1 128 128 128
 	bin/cufinufft3d1_test 4 15 15 15
 	bin/cufinufft3d2_test 1 16 16 16
+	bin/cufinufft3d3_test 1 512 1024
 	bin/cufinufft3d1_test 1 64 64 64 1000
 	bin/cufinufft3d1_test 1 1e2 2e2 3e2 1e4
 	bin/cufinufft3d1_test 4 1e2 2e2 3e2 1e4
