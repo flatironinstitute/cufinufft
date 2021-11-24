@@ -17,16 +17,23 @@ endif
 
 CC   ?= gcc
 CXX  ?= g++
-NVCC ?= /usr/local/cuda/bin/nvcc
+NVCC ?= nvcc
 
 # Developer-users are suggested to optimize NVARCH in their own make.inc, see:
 #   http://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/
-NVARCH ?= -gencode=arch=compute_60,code=sm_60 \
-	  -gencode=arch=compute_61,code=sm_61
+NVARCH ?= -arch=sm_70 \
+	  -gencode=arch=compute_35,code=sm_35 \
+	  -gencode=arch=compute_50,code=sm_50 \
+	  -gencode=arch=compute_52,code=sm_52 \
+	  -gencode=arch=compute_60,code=sm_60 \
+	  -gencode=arch=compute_61,code=sm_61 \
+	  -gencode=arch=compute_70,code=sm_70 \
+	  -gencode=arch=compute_75,code=sm_75 \
+	  -gencode=arch=compute_75,code=compute_75
 
-CFLAGS    ?= -fPIC -g
+CFLAGS    ?= -fPIC -O3 -funroll-loops -march=native
 CXXFLAGS  ?= $(CFLAGS) -std=c++14
-NVCCFLAGS ?= -ccbin=$(CXX) $(NVARCH) -Wno-deprecated-gpu-targets \
+NVCCFLAGS ?= -std=c++14 -ccbin=$(CXX) -O3 $(NVARCH) -Wno-deprecated-gpu-targets \
 	     --default-stream per-thread -Xcompiler "$(CXXFLAGS)"
 
 # For debugging, tell nvcc to add symbols to host and device code respectively,
