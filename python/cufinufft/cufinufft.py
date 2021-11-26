@@ -46,7 +46,7 @@ class cufinufft:
         and make a plan with the cufinufft libraries.
         Exposes python methods to execute and destroy.
 
-        :param finufft_type: integer 1, 2, or 3.
+        :param nufft_type: integer 1, 2, or 3.
         :param modes: Array describing the shape of the transform \
         in 1, 2, or 3 dimensions.
         :param n_trans: Number of transforms, defaults to 1.
@@ -164,16 +164,20 @@ class cufinufft:
         if ier != 0:
             raise RuntimeError('Error creating plan.')
 
-    def set_pts(self, kx, ky=None, kz=None):
+    def set_pts(self, kx, ky=None, kz=None, s=None, t=None, u=None):
         """
         Sets non uniform points of the correct dtype.
 
         Note kx, ky, kz are required for 1, 2, and 3
-        dimensional cases respectively.
+        dimensional cases respectively. s, t and u are only required
+        for type 3.
 
         :param kx: Array of x points.
         :param ky: Array of y points.
         :param kz: Array of z points.
+        :param s: Array of s points.
+        :param t: Array of t points.
+        :param u: Array of u points.
         """
 
         if kx.dtype != self.dtype:
@@ -188,13 +192,35 @@ class cufinufft:
             raise TypeError("cufinufft plan.dtype and "
                             "kz dtypes do not match.")
 
+        if s and s.dtype != self.dtype:
+            raise TypeError("cufinufft plan.dtype and "
+                            "s dtypes do not match.")
+
+        if t and t.dtype != self.dtype:
+            raise TypeError("cufinufft plan.dtype and "
+                            "t dtypes do not match.")
+
+        if u and u.dtype != self.dtype:
+            raise TypeError("cufinufft plan.dtype and "
+                            "u dtypes do not match.")
+
         M = kx.size
+        N = 0
 
         if ky and ky.size != M:
             raise TypeError("Number of elements in kx and ky must be equal")
 
         if kz and kz.size != M:
             raise TypeError("Number of elements in kx and kz must be equal")
+
+        if s:
+            N = s.size
+
+        if t and t.size != N:
+            raise TypeError("Number of elements in s and t must be equal")
+
+        if u and u.size != N:
+            raise TypeError("Number of elements in s and u must be equal")
 
         # Because FINUFFT/cufinufft are internally column major,
         #   we will reorder the pts axes. Reordering references
@@ -218,8 +244,22 @@ class cufinufft:
             fpts_axes.insert(0, kz.ptr)
             self.references.append(kz)
 
+        fpts_axes_stu = [None, None, None]
+
+        if s is not None:
+            fpts_axes_stu.insert(0, s.ptr)
+            self.references.append(s)
+
+        if t is not None:
+            fpts_axes_stu.insert(0, t.ptr)
+            self.references.append(t)
+
+        if u is not None:
+            fpts_axes_stu.insert(0, u.ptr)
+            self.references.append(u)
+
         # Then take three items off the stack as our reordered axis.
-        ier = self._set_pts(M, *fpts_axes[:3], 0, None, None, None, self.plan)
+        ier = self._set_pts(M, *fpts_axes[:3], N, *fpts_axes_stu[:3], self.plan)
 
         if ier != 0:
             raise RuntimeError('Error setting non-uniform points.')
