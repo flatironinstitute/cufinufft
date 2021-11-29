@@ -65,7 +65,7 @@ for i in range(n_transf):
     err = np.abs(fk[i, nt] - fk_true)
     rel_err = err / np.max(np.abs(fk[i]))
 
-    print(f"[{i}] Absolute error on mode [{nt1}, {nt2}] is {err:.3g}")
-    print(f"[{i}] Relative error on mode [{nt1}, {nt2}] is {rel_err:.3g}")
+    print(f"[{i}] Absolute error on mode [{nt}] is {err:.3g}")
+    print(f"[{i}] Relative error on mode [{nt}] is {rel_err:.3g}")
 
     assert(rel_err < 10 * eps)

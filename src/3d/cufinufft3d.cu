@@ -227,7 +227,7 @@ int CUFINUFFT3D3_EXEC(CUCPX* d_c, CUCPX* d_fk, CUFINUFFT_PLAN d_plan)
 		// Step 2: Execute type 2
 		d_plan->innert2plan->ntransf = blksize;
 
-		CUFINUFFT3D2_EXEC(d_fk, d_plan->fw, d_plan->innert2plan);
+		CUFINUFFT3D2_EXEC(d_fkstart, d_plan->fw, d_plan->innert2plan);
 
 		// Step 3: deconvolve
 		cudaEventRecord(start);
