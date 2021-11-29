@@ -190,6 +190,7 @@ int CUFINUFFT3D3_EXEC(CUCPX* d_c, CUCPX* d_fk, CUFINUFFT_PLAN d_plan)
 		d_plan->c = d_cstart;
 		d_plan->fk = d_fkstart;
 
+		cudaEventRecord(start);
 
 		// Step 0: prephase
 		if (d_plan->t3P.D1!=0.0 || d_plan->t3P.D2!=0.0 || d_plan->t3P.D3!=0.0) {
@@ -223,11 +224,26 @@ int CUFINUFFT3D3_EXEC(CUCPX* d_c, CUCPX* d_fk, CUFINUFFT_PLAN d_plan)
 			printf("error: cuspread3d, method(%d)\n", d_plan->opts.gpu_method);
 			return ier;
 		}
+#ifdef TIME
+		cudaEventRecord(stop);
+		cudaEventSynchronize(stop);
+		cudaEventElapsedTime(&milliseconds, start, stop);
+		printf("[time  ] \tSpread (%d)\t\t %.3g s\n", milliseconds/1000, 
+			d_plan->opts.gpu_method);
+#endif
 
 		// Step 2: Execute type 2
 		d_plan->innert2plan->ntransf = blksize;
 
+		cudaEventRecord(start);
 		CUFINUFFT3D2_EXEC(d_fkstart, d_plan->fw, d_plan->innert2plan);
+#ifdef TIME
+		cudaEventRecord(stop);
+		cudaEventSynchronize(stop);
+		cudaEventElapsedTime(&milliseconds, start, stop);
+		printf("[time  ] \tInner type 2 execution (%d)\t\t %.3g s\n", milliseconds/1000, 
+			d_plan->opts.gpu_method);
+#endif
 
 		// Step 3: deconvolve
 		cudaEventRecord(start);
