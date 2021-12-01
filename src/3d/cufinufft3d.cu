@@ -196,9 +196,9 @@ int CUFINUFFT3D3_EXEC(CUCPX* d_c, CUCPX* d_fk, CUFINUFFT_PLAN d_plan)
 		if (d_plan->t3P.D1!=0.0 || d_plan->t3P.D2!=0.0 || d_plan->t3P.D3!=0.0) {
 			for (int i=0; i<blksize; i++) {
 				thrust::transform(thrust::device, reinterpret_cast<const thrust::complex<FLT>*>(d_plan->prephase),
-						reinterpret_cast<const thrust::complex<FLT>*>(d_plan->prephase) + d_plan->N,
-						reinterpret_cast<const thrust::complex<FLT>*>(d_cstart + i * d_plan->N),
-						reinterpret_cast<thrust::complex<FLT>*>(d_plan->cpbatch + i * d_plan->N),
+						reinterpret_cast<const thrust::complex<FLT>*>(d_plan->prephase) + d_plan->M,
+						reinterpret_cast<const thrust::complex<FLT>*>(d_cstart + i * d_plan->M),
+						reinterpret_cast<thrust::complex<FLT>*>(d_plan->cpbatch + i * d_plan->M),
 						thrust::multiplies<thrust::complex<FLT>>());
 			}
 		}

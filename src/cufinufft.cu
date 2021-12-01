@@ -429,8 +429,7 @@ Notes: the type FLT means either single or double, matching the
 		int nf3 = d_plan->nf3;
 
 		// Allocate memory
-		checkCudaErrors(cudaMalloc(&d_plan->cpbatch, d_plan->maxbatchsize*nf1*nf2*nf3*
-			sizeof(CUCPX)));
+		checkCudaErrors(cudaMalloc(&d_plan->cpbatch, d_plan->maxbatchsize*M*sizeof(CUCPX)));
 
 		switch(d_plan->dim)
 		{
