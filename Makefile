@@ -155,7 +155,8 @@ spreadtest: $(BINDIR)/spread2d_test \
 	$(BINDIR)/interp1d_test_32
 
 examples: $(BINDIR)/example2d1many \
-	$(BINDIR)/example2d2many
+	$(BINDIR)/example2d2many \
+	$(BINDIR)/example3d3many
 
 $(BINDIR)/example%: examples/example%.cpp $(DYNAMICLIB) $(HEADERS)
 	mkdir -p $(BINDIR)
@@ -335,6 +336,7 @@ check3D_32: spreadtest libtest
 checkexamples: examples
 	$(BINDIR)/example2d1many
 	$(BINDIR)/example2d2many
+	$(BINDIR)/example3d3many
 # --------------------------------------------- end of check tasks ---------
 
 

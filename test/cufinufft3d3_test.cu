@@ -205,7 +205,7 @@ int main(int argc, char* argv[])
 	CPX ft = CPX(0,0);
 	for (int i = 0; i < M; ++i)
 	    ft += c[i] * exp(J * (x[i] * s[jt] + y[i] * t[jt] + z[i] * u[jt]));   // crude direct
-	printf("[gpu   ] one targ: rel err in c[%ld] is %.3g\n",(int64_t)jt,
+	printf("[gpu   ] one targ: rel err in F[%ld] is %.3g\n",(int64_t)jt,
 		abs(fk[jt]-ft)/infnorm(N,fk));
 
 	cudaFreeHost(x);
