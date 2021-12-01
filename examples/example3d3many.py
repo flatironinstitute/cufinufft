@@ -42,7 +42,7 @@ c = c.astype(complex_dtype)
 fk_gpu = GPUArray((n_transf, N), dtype=complex_dtype)
 
 # Initialize the plan and set the points.
-plan = cufinufft(3, (0, 0, 0), n_transf, eps=eps, dtype=dtype)
+plan = cufinufft(3, 3, n_transf, eps=eps, dtype=dtype)
 plan.set_pts(to_gpu(kx), to_gpu(ky), to_gpu(kz), to_gpu(s), to_gpu(t), to_gpu(u))
 
 # Execute the plan, reading from the strengths array c and storing the

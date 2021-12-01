@@ -38,7 +38,7 @@ class cufinufft:
     The wrapper performs a few very basic conversions,
     and calls the low level library with runtime python error checking.
     """
-    def __init__(self, nufft_type, modes, n_trans=1, eps=1e-6, isign=None,
+    def __init__(self, nufft_type, modes_or_dim, n_trans=1, eps=1e-6, isign=None,
                  dtype=np.float32, **kwargs):
         """
         Initialize a dtype bound cufinufft python wrapper.
@@ -47,8 +47,11 @@ class cufinufft:
         Exposes python methods to execute and destroy.
 
         :param nufft_type: integer 1, 2, or 3.
-        :param modes: Array describing the shape of the transform \
-        in 1, 2, or 3 dimensions.
+        :param modes_or_dim: if ``nufft_type`` is 1 or 2,
+                        this should be a tuple specifying the number of modes
+                        in each dimension (for example, ``(50, 100)``),
+                        otherwise, if `nufft_type`` is 3, this should be the
+                        number of dimensions (between 1 and 3).
         :param n_trans: Number of transforms, defaults to 1.
         :param eps: Precision requested (>1e-16).
         :param isign: +1 or -1, controls sign of imaginary component in
@@ -90,18 +93,28 @@ class cufinufft:
         else:
             raise TypeError("Expected np.float32 or np.float64.")
 
-        self.dim = len(modes)
         self._finufft_type = nufft_type
         self.isign = isign
         self.eps = float(eps)
         self.n_trans = n_trans
         self._maxbatch = 1    # TODO: optimize this one day
 
-        # We extend the mode tuple to 3D as needed,
-        #   and reorder from C/python ndarray.shape style input (nZ, nY, nX)
-        #   to the (F) order expected by the low level library (nX, nY, nZ).
-        modes = modes[::-1] + (1,) * (3 - self.dim)
-        self.modes = (c_int * 3)(*modes)
+        if nufft_type == 3:
+            npdim = np.asarray(modes_or_dim, dtype=np.int64)
+            if npdim.size != 1:
+                raise RuntimeError('type 3 plan modes_or_dim must be one number (the dimension)')
+            self.dim = int(npdim)
+            self.modes = (c_int * 3)(*(0,0,0))
+        else:
+            modes = np.asarray(modes_or_dim, dtype=c_int)
+            if modes.size>3 or modes.size<1:
+                raise RuntimeError("modes_or_dim dimension must be 1, 2, or 3")
+            self.dim = len(modes)
+            # We extend the mode tuple to 3D as needed,
+            #   and reorder from C/python ndarray.shape style input (nZ, nY, nX)
+            #   to the (F) order expected by the low level library (nX, nY, nZ).
+            modes[0:self.dim] = modes[::-1]
+            self.modes = (c_int * 3)(*modes)
 
         # Get the default option values.
         self.opts = self._default_opts(nufft_type, self.dim)
