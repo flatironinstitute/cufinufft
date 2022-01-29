@@ -1,7 +1,7 @@
 #include <iostream>
 #include <math.h>
+#include "cuda_hip_wrapper.h"
 #include <helper_cuda.h>
-#include <cuda.h>
 #include <thrust/extrema.h>
 #include "../../contrib/utils.h"
 #include "../../contrib/utils_fp.h"
