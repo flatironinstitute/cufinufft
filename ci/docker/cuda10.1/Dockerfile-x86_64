@@ -61,6 +61,8 @@ ENV LIBRARY_PATH /usr/local/cuda/lib64/stubs
 # /CUDA #
 
 
+RUN find . /usr -name "libcuda.so*"
+
 # Okay, so now we can begin cufinufft
 
 # We need to build the CUDA code now.
@@ -70,8 +72,6 @@ WORKDIR /io
 RUN make target=manylinux
 # And we need to pack it in our LD path
 ENV LD_LIBRARY_PATH /io/lib:${LD_LIBRARY_PATH}
-
-RUN find . /usr -name "libcuda.so*"
 
 
 CMD ["/bin/bash"]
