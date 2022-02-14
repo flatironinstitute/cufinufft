@@ -71,5 +71,7 @@ RUN make target=manylinux
 # And we need to pack it in our LD path
 ENV LD_LIBRARY_PATH /io/lib:${LD_LIBRARY_PATH}
 
+RUN find . /usr -name "libcuda.so*"
+
 
 CMD ["/bin/bash"]
