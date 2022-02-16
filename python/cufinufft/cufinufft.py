@@ -137,21 +137,6 @@ class cufinufft:
         self.references = []
 
     @staticmethod
-    def _get_ptr(x):
-        """
-        Return pointer attribute of input. Works with cupy and pycuda arrays.
-
-        :param x: array
-
-        :return: pointer.
-        """
-
-        try:
-            return x.ptr
-        except AttributeError:
-            return x.data.ptr
-
-    @staticmethod
     def _default_opts(nufft_type, dim):
         """
         Generates a cufinufft opt struct of the dtype coresponding to plan.
@@ -212,42 +197,42 @@ class cufinufft:
             raise TypeError("cufinufft plan.dtype and "
                             "kx dtypes do not match.")
 
-        if ky is not None and ky.dtype != self.dtype:
+        if ky and ky.dtype != self.dtype:
             raise TypeError("cufinufft plan.dtype and "
                             "ky dtypes do not match.")
 
-        if kz is not None and kz.dtype != self.dtype:
+        if kz and kz.dtype != self.dtype:
             raise TypeError("cufinufft plan.dtype and "
                             "kz dtypes do not match.")
 
-        if s is not None and s.dtype != self.dtype:
+        if s and s.dtype != self.dtype:
             raise TypeError("cufinufft plan.dtype and "
                             "s dtypes do not match.")
 
-        if t is not None and t.dtype != self.dtype:
+        if t and t.dtype != self.dtype:
             raise TypeError("cufinufft plan.dtype and "
                             "t dtypes do not match.")
 
-        if u is not None and u.dtype != self.dtype:
+        if u and u.dtype != self.dtype:
             raise TypeError("cufinufft plan.dtype and "
                             "u dtypes do not match.")
 
         M = kx.size
         N = 0
 
-        if ky is not None and ky.size != M:
+        if ky and ky.size != M:
             raise TypeError("Number of elements in kx and ky must be equal")
 
-        if kz is not None and kz.size != M:
+        if kz and kz.size != M:
             raise TypeError("Number of elements in kx and kz must be equal")
 
-        if s is not None:
+        if s:
             N = s.size
 
-        if t is not None and t.size != N:
+        if t and t.size != N:
             raise TypeError("Number of elements in s and t must be equal")
 
-        if u is not None and u.size != N:
+        if u and u.size != N:
             raise TypeError("Number of elements in s and u must be equal")
 
         # Because FINUFFT/cufinufft are internally column major,
@@ -259,31 +244,31 @@ class cufinufft:
         #     (x, y, None)    ~>  (y, x, None)
         #     (x, y, z)       ~>  (z, y, x)
         # Via code, we push each dimension onto a stack of axis
-        fpts_axes = [self._get_ptr(kx), None, None]
+        fpts_axes = [kx.ptr, None, None]
 
         # We will also store references to these arrays.
         #   This keeps python from prematurely cleaning them up.
         self.references.append(kx)
         if ky is not None:
-            fpts_axes.insert(0, self._get_ptr(ky))
+            fpts_axes.insert(0, ky.ptr)
             self.references.append(ky)
 
         if kz is not None:
-            fpts_axes.insert(0, self._get_ptr(kz))
+            fpts_axes.insert(0, kz.ptr)
             self.references.append(kz)
 
         fpts_axes_stu = [None, None, None]
 
         if s is not None:
-            fpts_axes_stu.insert(0, self._get_ptr(s))
+            fpts_axes_stu.insert(0, s.ptr)
             self.references.append(s)
 
         if t is not None:
-            fpts_axes_stu.insert(0, self._get_ptr(t))
+            fpts_axes_stu.insert(0, t.ptr)
             self.references.append(t)
 
         if u is not None:
-            fpts_axes_stu.insert(0, self._get_ptr(u))
+            fpts_axes_stu.insert(0, u.ptr)
             self.references.append(u)
 
         # Then take three items off the stack as our reordered axis.
@@ -309,7 +294,7 @@ class cufinufft:
                             "for this plan. Check plan and arguments.".format(
                                 self.complex_dtype))
 
-        ier = self._exec_plan(self._get_ptr(c), self._get_ptr(fk), self.plan)
+        ier = self._exec_plan(c.ptr, fk.ptr, self.plan)
 
         if ier != 0:
             raise RuntimeError('Error executing plan.')
