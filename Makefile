@@ -133,6 +133,7 @@ libtest: lib $(BINDIR)/cufinufft2d1_test \
 	$(BINDIR)/cufinufft3d3_test \
 	$(BINDIR)/cufinufft3d1_test_32 \
 	$(BINDIR)/cufinufft3d2_test_32 \
+	$(BINDIR)/cufinufft3d3_test_32 \
 	$(BINDIR)/cufinufft2d2api_test \
 	$(BINDIR)/cufinufft2d2api_test_32 \
 	$(BINDIR)/cufinufft1d1_test \
@@ -320,6 +321,7 @@ check3D_32: spreadtest libtest
 	bin/cufinufft3d1_test_32 4 15 15 15 2048 1e-3
 	bin/cufinufft3d2_test_32 1 16 16 16 4096 1e-3
 	bin/cufinufft3d2_test_32 2 16 16 16 8192 1e-3
+	bin/cufinufft3d3_test_32 1 2048 4096 1e-3
 	bin/cufinufft3d1_test_32 1 128 128 128
 	bin/cufinufft3d1_test_32 2 16 16 16
 	bin/cufinufft3d1_test_32 4 15 15 15
