@@ -200,7 +200,7 @@ int main(int argc, char* argv[])
 
 	printf("[Method %d] %ld U pts to %d NU pts in %.3g s:\t%.3g NU pts/s\n",
 			opts.gpu_method, N ,M,totaltime/1000,(M+N)/totaltime*1000);
-        printf("\t\t\t\t\t(exec-only thoughput: %.3g NU pts/s)\n",M/exec_ms*1000);
+        printf("\t\t\t\t\t(exec-only thoughput: %.3g NU pts/s)\n",(M+N)/exec_ms*1000);
 
 	int jt = N/2;          // check arbitrary choice of one targ pt
 	CPX J = IMA*(FLT)iflag;
