@@ -188,6 +188,8 @@ This performs:
 	if (ier>1)                           // proceed if success or warning
 	  return ier;
 
+	// must be called for all types
+	SETUP_BINSIZE(type, dim, &d_plan->opts);
 
 	// Setup for type 3 is done when points are set. Only implemented for dim = 3.
 	if(d_plan->type == 3 && d_plan->dim == 3) 
@@ -212,7 +214,6 @@ This performs:
 	d_plan->mt = nmodes[1];
 	d_plan->mu = nmodes[2];
 
-	SETUP_BINSIZE(type, dim, &d_plan->opts);
 	int nf1=1, nf2=1, nf3=1;
 	SET_NF_TYPE12(d_plan->ms, d_plan->opts, d_plan->spopts, &nf1,
 				  d_plan->opts.gpu_obinsizex);

@@ -214,7 +214,7 @@ int main(int argc, char* argv[])
 	cudaFreeHost(y);
 	cudaFreeHost(z);
 	cudaFreeHost(s);
-	cudaFreeHost(y);
+	cudaFreeHost(t);
 	cudaFreeHost(u);
 	cudaFreeHost(c);
 	cudaFreeHost(fk);
