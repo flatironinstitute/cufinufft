@@ -1,5 +1,5 @@
 """
-Demonstrate the type 1 NUFFT using cuFINUFFT
+Demonstrate the 3d type 3 NUFFT using cuFINUFFT
 """
 
 import numpy as np

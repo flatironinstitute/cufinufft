@@ -8,6 +8,7 @@
 #include "memtransfer.h"
 #include "../contrib/utils.h"
 #include "../contrib/common.h"
+#include "../include/utils.h"
 
 void arraywidcen_gpu(BIGINT n, FLT* d_a, FLT *w, FLT *c)
 // Writes out w = half-width and c = center of an interval enclosing all d_a[n]'s

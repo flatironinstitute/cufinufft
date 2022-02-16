@@ -7,7 +7,6 @@
 #include <helper_cuda.h>
 #include <complex>
 #include <cufft.h>
-// #include <thrust/zip_iterator.h>
 #include <thrust/tuple.h>
 #include <thrust/transform.h>
 #include <thrust/execution_policy.h>
@@ -19,7 +18,7 @@
 #include "cuspreadinterp.h"
 #include "cudeconvolve.h"
 #include "memtransfer.h"
-#include "util_t3.h"
+#include "../include/utils.h"
 
 using namespace std;
 
@@ -192,7 +191,7 @@ This performs:
 
 	// Setup for type 3 is done when points are set. Only implemented for dim = 3.
 	if(d_plan->type == 3 && d_plan->dim == 3) 
-		return ier;
+            return ier;
 
         // Mult-GPU support: set the CUDA Device ID:
         int orig_gpu_device_id;
@@ -423,10 +422,6 @@ Notes: the type FLT means either single or double, matching the
 			set_nhg_type3(S3, d_plan->t3P.X3, d_plan->opts,d_plan->spopts,
 			    &(d_plan->nf3), &(d_plan->t3P.h3), &(d_plan->t3P.gam3));
 		}
-
-		int nf1 = d_plan->nf1;
-		int nf2 = d_plan->nf2;
-		int nf3 = d_plan->nf3;
 
 		// Allocate memory
 		checkCudaErrors(cudaMalloc(&d_plan->cpbatch, d_plan->maxbatchsize*M*sizeof(CUCPX)));

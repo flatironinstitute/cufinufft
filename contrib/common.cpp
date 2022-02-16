@@ -131,7 +131,7 @@ void onedim_nuft_kernel(BIGINT nk, FLT *k, FLT *phihat, SPREAD_OPTS opts)
 #pragma omp parallel for
   for (BIGINT j=0;j<nk;++j) {          // loop along output array
     FLT x = 0.0;                    // register
-    for (int n=0;n<q;++n) x += f[n] * 2*cos(k[j]*z[n]);  // pos & neg freq pair
+    for (int n=0;n<q;++n) x += f[n] * 2*cos(k[j]*(FLT)z[n]);  // pos & neg freq pair
     phihat[j] = x;
   }
 }  

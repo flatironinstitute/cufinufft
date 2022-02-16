@@ -3,6 +3,7 @@
 #include <math.h>
 #include <helper_cuda.h>
 #include <complex>
+#include <cmath>
 #include <profile.h>
 
 #include <cufinufft_eitherprec.h>
@@ -16,7 +17,7 @@ int main(int argc, char* argv[])
 	int N, M;
 	if (argc<3) {
 		fprintf(stderr,
-			"Usage: cufinufft3d2_test method N1 N2 N3 [M [tol]]\n"
+			"Usage: cufinufft3d3_test method N1 N2 N3 [M [tol]]\n"
 			"Arguments:\n"
 			"  method: One of\n"
 			"    1: nupts driven, or\n"
@@ -78,10 +79,11 @@ int main(int argc, char* argv[])
 		z[i] = M_PI*randm11();
 	}
 
+	FLT N_cbrt = std::cbrt(N);
 	for (int i = 0; i < N; i++) {
-		s[i] = M_PI*randm11();// x in [-pi,pi)
-		t[i] = M_PI*randm11();
-		u[i] = M_PI*randm11();
+		s[i] = N_cbrt*M_PI*randm11();// x in [-pi,pi)
+		t[i] = N_cbrt*M_PI*randm11();
+		u[i] = N_cbrt*M_PI*randm11();
 	}
 
 	for(int i=0; i<M; i++){
@@ -104,7 +106,7 @@ int main(int argc, char* argv[])
 	cudaEventCreate(&start);
 	cudaEventCreate(&stop);
 
-    // warm up CUFFT (is slow, takes around 0.2 sec... )
+	// warm up CUFFT (is slow, takes around 0.2 sec... )
 	cudaEventRecord(start);
 	{
 		int nf1=1;
@@ -197,7 +199,7 @@ int main(int argc, char* argv[])
 	checkCudaErrors(cudaMemcpy(fk,d_fk,N*sizeof(CUCPX),cudaMemcpyDeviceToHost));
 
 	printf("[Method %d] %ld U pts to %d NU pts in %.3g s:\t%.3g NU pts/s\n",
-			opts.gpu_method, N ,M,totaltime/1000,M/totaltime*1000);
+			opts.gpu_method, N ,M,totaltime/1000,(M+N)/totaltime*1000);
         printf("\t\t\t\t\t(exec-only thoughput: %.3g NU pts/s)\n",M/exec_ms*1000);
 
 	int jt = N/2;          // check arbitrary choice of one targ pt
