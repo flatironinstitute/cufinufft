@@ -27,7 +27,8 @@ void eval_kernel_vec_Horner(FLT *ker, const FLT x, const int w,
 	// insert the auto-generated code which expects z, w args, writes to ker...
 	if (upsampfac==2.0) {     // floating point equality is fine here
 #include "../contrib/ker_horner_allw_loop.c"
-	}
+	} else if (upsampfac==1.25) {
+#include "../contrib/ker_lowupsampfac_horner_allw_loop.c"
 }
 
 static __inline__ __device__
