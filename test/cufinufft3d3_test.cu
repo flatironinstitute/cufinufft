@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
 	int N, M;
 	if (argc<3) {
 		fprintf(stderr,
-			"Usage: cufinufft3d3_test method N1 N2 N3 [M [tol]]\n"
+			"Usage: cufinufft3d3_test method M N [tol]\n"
 			"Arguments:\n"
 			"  method: One of\n"
 			"    1: nupts driven, or\n"
