@@ -1,7 +1,7 @@
 #include <iostream>
 #include <math.h>
 #include <helper_cuda.h>
-#include <cuda.h>
+#include "cuda_hip_wrapper.h"
 #include "../../contrib/utils.h"
 #include "../../contrib/utils_fp.h"
 #include "../cuspreadinterp.h"

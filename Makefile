@@ -35,6 +35,7 @@ CFLAGS    ?= -fPIC -O3 -funroll-loops -march=native
 CXXFLAGS  ?= $(CFLAGS) -std=c++14
 NVCCFLAGS ?= -std=c++14 -ccbin=$(CXX) -O3 $(NVARCH) -Wno-deprecated-gpu-targets \
 	     --default-stream per-thread -Xcompiler "$(CXXFLAGS)"
+DEVFLAGS  ?= --device-c
 
 # For debugging, tell nvcc to add symbols to host and device code respectively,
 #NVCCFLAGS+= -g -G
@@ -51,7 +52,8 @@ else
 endif
 
 # Common includes
-INC += -I$(CUDA_ROOT)/include -Icontrib/cuda_samples
+INC ?= -I$(CUDA_ROOT)/include
+INC += -Icontrib -Icontrib/cuda_samples
 
 # NVCC-specific libs
 NVCC_LIBS_PATH += -L$(CUDA_ROOT)/lib64
@@ -63,7 +65,7 @@ ifdef NVCC_STUBS
     NVCC_LIBS_PATH += -L$(NVCC_STUBS)
 endif
 
-LIBS += -lm -lcudart -lstdc++ -lnvToolsExt -lcufft -lcuda
+LIBS ?= -lm -lcudart -lstdc++ -lnvToolsExt -lcufft -lcuda
 
 
 #############################################################
@@ -73,7 +75,8 @@ LIBS += -lm -lcudart -lstdc++ -lnvToolsExt -lcufft -lcuda
 # Include header files
 INC += -I include
 
-LIBNAME=libcufinufft
+LIBNAME_SHORT=cufinufft
+LIBNAME=lib$(LIBNAME_SHORT)
 DYNAMICLIB=lib/$(LIBNAME).so
 STATICLIB=lib-static/$(LIBNAME).a
 
@@ -105,13 +108,13 @@ CUFINUFFTOBJS_32=$(CUFINUFFTOBJS_64:%.o=%_32.o)
 %_32.o: %.c $(HEADERS)
 	$(CC) -DSINGLE -c $(CFLAGS) $(INC) $< -o $@
 %_32.o: %.cu $(HEADERS)
-	$(NVCC) -DSINGLE --device-c -c $(NVCCFLAGS) $(INC) $< -o $@
+	$(NVCC) -DSINGLE $(DEVFLAGS) -c $(NVCCFLAGS) $(INC) $< -o $@
 %.o: %.cpp $(HEADERS)
 	$(CXX) -c $(CXXFLAGS) $(INC) $< -o $@
 %.o: %.c $(HEADERS)
 	$(CC) -c $(CFLAGS) $(INC) $< -o $@
 %.o: %.cu $(HEADERS)
-	$(NVCC) --device-c -c $(NVCCFLAGS) $(INC) $< -o $@
+	$(NVCC) $(DEVFLAGS) -c $(NVCCFLAGS) $(INC) $< -o $@
 
 default: all
 
@@ -164,11 +167,11 @@ examples: $(BINDIR)/example2d1many \
 
 $(BINDIR)/example%: examples/example%.cpp $(DYNAMICLIB) $(HEADERS)
 	mkdir -p $(BINDIR)
-	$(NVCC) $(NVCCFLAGS) $(INC) $(LIBS) -o $@ $< $(DYNAMICLIB)
+	$(NVCC) $(NVCCFLAGS) $(INC) $(LIBS) -o $@ $< -Llib -l$(LIBNAME_SHORT)
 
 $(BINDIR)/cufinufft2d2api_test%: test/cufinufft2d2api_test%.o $(DYNAMICLIB)
 	mkdir -p $(BINDIR)
-	$(NVCC) $(NVCCFLAGS) $(LIBS) -o $@ $< $(DYNAMICLIB)
+	$(NVCC) $(NVCCFLAGS) $(LIBS) -o $@ $< -Llib -l$(LIBNAME_SHORT)
 
 $(BINDIR)/%_32: test/%_32.o $(CUFINUFFTOBJS_32) $(CUFINUFFTOBJS)
 	mkdir -p $(BINDIR)

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <iomanip>
 #include <math.h>
+#include "cuda_hip_wrapper.h"
 #include <helper_cuda.h>
 #include <complex>
 #include "../src/cuspreadinterp.h"

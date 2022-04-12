@@ -1,8 +1,7 @@
-#include <helper_cuda.h>
+#include "cuda_hip_wrapper.h"
 #include <iostream>
 #include <iomanip>
 
-#include <cuComplex.h>
 #include "../cuspreadinterp.h"
 #include "../memtransfer.h"
 #include <profile.h>

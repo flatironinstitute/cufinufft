@@ -7,9 +7,8 @@
 // Make sure we don't include double or single headers more than once...
 
 #include <cstdlib>
-#include <cufft.h>
+#include "cuda_hip_wrapper.h"
 #include <assert.h>
-#include <cuda_runtime.h>
 #include "cufinufft_opts.h"
 #include "../src/precision_independent.h"
 #include "cufinufft_errors.h"

@@ -36,8 +36,10 @@ static const char* _cufftGetErrorEnum(cufftResult_t error)
 			return "cufft_no_workspace";
 		case CUFFT_NOT_IMPLEMENTED:
 			return "cufft_not_implemented";
+#ifndef USE_HIP
 		case CUFFT_LICENSE_ERROR:
 			return "cufft_license_error";
+#endif
 		case CUFFT_NOT_SUPPORTED:
 			return "cufft_not_supported";
 	}
