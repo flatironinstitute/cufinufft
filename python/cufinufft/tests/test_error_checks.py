@@ -1,8 +1,9 @@
 import numpy as np
 import pytest
 
-import pycuda.autoinit # NOQA:401
-import pycuda.gpuarray as gpuarray
+import PyGPU as gpuarray
+#import pycuda.autoinit # NOQA:401
+#import pycuda.gpuarray as gpuarray
 
 from cufinufft import cufinufft
 

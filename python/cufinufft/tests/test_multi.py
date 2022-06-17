@@ -2,8 +2,9 @@ import pytest
 
 import numpy as np
 
-import pycuda.driver as drv
-import pycuda.gpuarray as gpuarray
+import PyGPU as gpuarray
+#import pycuda.driver as drv
+#import pycuda.gpuarray as gpuarray
 
 from cufinufft import cufinufft
 

@@ -4,8 +4,11 @@ Demonstrate the type 2 NUFFT using cuFINUFFT
 
 import numpy as np
 
-import pycuda.autoinit
-from pycuda.gpuarray import GPUArray, to_gpu
+import PyGPU as gpuarray
+from PyGPU.gpuarray import GPUArray, to_gpu
+
+#import pycuda.autoinit
+#from pycuda.gpuarray import GPUArray, to_gpu
 
 from cufinufft import cufinufft
 
