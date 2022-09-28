@@ -147,6 +147,8 @@ The currently supported targets and sites are:
     1. OLCF Summit (`site=olcf_summit`) -- automatically sets `target=power9`
     1. CIMS (`site=CIMS`)
     1. Flatiron Institute, rusty cluster GPU node (`site=FI`)
+    1. Princeton University, tigergpu cluster (`site=tigergpu`)
+    1. Princeton University, PACM machines (`site=PACM`)
 1. Targets
     1. Default (`x86_64`) -- do not specify `target` variable
     1. IBM `power9` (`target=power9`)
