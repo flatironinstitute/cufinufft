@@ -1,0 +1,29 @@
+# Princeton - `tigergpu`
+# Cuda Version is 11.4
+# Driver Version: 470.82.01
+# The P100 is SM_60 arch
+# Wright 20220928
+
+# Here's some cmds to run experiments tigergpu:
+
+# Log into tigergpu, load a reasonable env
+#module load rh/devtoolset/9
+#module load cudatoolkit/11.3
+#module load anaconda3/5.3.1
+
+# Compile the code on the head node
+#make all site=tigergpu
+# compile takes <1min with -j
+# login to a gpu compute node
+#salloc --cpus-per-task=4 --mem-per-cpu=1GB --nodes=1 --ntasks=1 -t0:15:00 --gres=gpu:1
+# to check the GPU...
+#nvidia-smi
+# to check the code
+#bin/cufinufft1d1_test 2 1e6 1e7
+#make check
+
+# Actual make site config below
+
+# see http://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/
+NVARCH = -arch=sm_60 \
+       -gencode=arch=compute_60,code=sm_60
