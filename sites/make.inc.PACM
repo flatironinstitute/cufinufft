@@ -1,0 +1,26 @@
+# Princeton - PACM `caf`
+# Cuda Version is 11.7
+# Driver Version: 515.65.01
+# The A100 is SM_80 arch
+# Wright 20221021
+
+# Here's some cmds to run experiments:
+
+# Log into caf, load a reasonable env
+#module load rh/devtoolset/8
+#module load cudatoolkit/11.7
+
+# Compile the code on the head node
+#make all site=PACM
+# compile takes <1min with -j
+# to check the GPU...
+#nvidia-smi
+# to check the code
+#bin/cufinufft1d1_test 2 1e6 1e7
+#make check
+
+# Actual make site config below
+
+# see http://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/
+NVARCH = -arch=sm_80 \
+       -gencode=arch=compute_80,code=sm_80
