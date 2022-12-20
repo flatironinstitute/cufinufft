@@ -2,7 +2,8 @@ import pytest
 
 import numpy as np
 
-import PyGPU as gpuarray
+import PybindGPU
+import PybindGPU.gpuarray as gpuarray
 #import pycuda.driver as drv
 #import pycuda.gpuarray as gpuarray
 
@@ -14,21 +15,24 @@ import utils
 def test_multi_type1(dtype=np.float32, shape=(16, 16, 16), M=4096, tol=1e-3):
     complex_dtype = utils._complex_dtype(dtype)
 
-    drv.init()
+    #drv.init()
 
-    dev_count = drv.Device.count()
+    #dev_count = drv.Device.count()
+    dev_count, err = PybindGPU.cudaGetDeviceCount()
 
     if dev_count == 1:
         pytest.skip()
 
-    devs = [drv.Device(dev_id) for dev_id in range(dev_count)]
+    #devs = [drv.Device(dev_id) for dev_id in range(dev_count)]
+    devs = [PybindGPU.cudaDeviceProp(i) for i in range(dev_count)]
 
     dim = len(shape)
 
     errs = []
 
     for dev_id, dev in enumerate(devs):
-        ctx = dev.make_context()
+        PybindGPU.cudaSetDevice(dev_id)
+        #ctx = dev.make_context()
 
         k = utils.gen_nu_pts(M, dim=dim).astype(dtype)
         c = utils.gen_nonuniform_data(M).astype(complex_dtype)
@@ -55,7 +59,7 @@ def test_multi_type1(dtype=np.float32, shape=(16, 16, 16), M=4096, tol=1e-3):
 
         print(f'Type 1 relative error (GPU {dev_id}):', type1_rel_err)
 
-        ctx.pop()
+        #ctx.pop()
 
         errs.append(type1_rel_err)
 

@@ -1,7 +1,7 @@
 import numpy as np
 
-import PyGPU as gpuarray
-
+#import PybindGPU
+import PybindGPU.gpuarray as gpuarray
 #import pycuda.autoinit # NOQA:401
 #import pycuda.gpuarray as gpuarray
 

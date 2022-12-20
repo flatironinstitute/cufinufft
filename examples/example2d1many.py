@@ -4,8 +4,8 @@ Demonstrate the type 1 NUFFT using cuFINUFFT
 
 import numpy as np
 
-#import PyGPU as gpuarray
-from PyGPU import GPUArray, to_gpu
+import PybindGPU.gpuarray as gpuarray
+from PybindGPU.gpuarray import GPUArray, to_gpu
 
 #import pycuda.autoinit
 #from pycuda.gpuarray import GPUArray, to_gpu
