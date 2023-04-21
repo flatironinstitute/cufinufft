@@ -5,6 +5,7 @@
 
 #include <thrust/device_ptr.h>
 #include <thrust/scan.h>
+#include <thrust/extrema.h>
 
 #include "precision_independent.h"
 

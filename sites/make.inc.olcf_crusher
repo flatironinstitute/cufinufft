@@ -1,9 +1,9 @@
 # CC := hipcc
 CXX := hipcc
 NVCC := hipcc
-NVARCH := --amdgpu-target=gfx90a
-CXXFLAGS += -fPIC -DUSE_HIP -I$(ROCM_PATH)/hipfft/include
+NVARCH := --offload-arch=gfx90a
+CXXFLAGS += -fPIC -DUSE_HIP -I$(ROCM_PATH)/include
 NVCCFLAGS := -std=c++14 -O3 $(NVARCH) $(CXXFLAGS)
 DEVFLAGS := -fgpu-rdc
 INC :=
-LIBS := -fgpu-rdc -L$(ROCM_PATH)/hipfft/lib -lhipfft
+LIBS := -fgpu-rdc -L$(ROCM_PATH)/lib -lhipfft
