@@ -22,6 +22,7 @@ pipeline {
     sh '''#!/bin/bash -ex
       source $HOME/bin/activate
       LIBRARY_PATH=/io/lib python3 -m pip install -e .
+      python3 -m pip install --upgrade "numpy<1.22"
       python3 -m pip install pytest
       python3 -m pytest
     '''
