@@ -1,4 +1,4 @@
-# cuFINUFFT v1.2 Python package
+# cuFINUFFT v1.3 Python package
 
 The cuFINUFFT library is an efficient GPU implementation of the 1-, 2- and
 3-dimensional nonuniform fast Fourier transform (NUFFT). It includes both type
@@ -10,7 +10,7 @@ cuFINUFFT library, which is written in C++ and CUDA.
 For a mathematical description of the NUFFT and applications to signal
 processing, imaging, and scientific computing, see [the FINUFFT
 documentation](https://finufft.readthedocs.io). Usage examples can be found
-[here](https://github.com/flatironinstitute/cufinufft/tree/v1.2/examples).
+[here](https://github.com/flatironinstitute/cufinufft/tree/v1.3/examples).
 
 If you use this package, please cite our paper:
 
