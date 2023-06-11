@@ -1,31 +1,38 @@
-# cuFINUFFT
+# cuFINUFFT v1.3
+
+**Note**: This repository holds the legacy cuFINUFFT codebase. Further development will take place in the [FINUFFT](https://www.github.com/flatironinstitute/finufft) repository. Please direct any issues or pull requests to that repository.
 
 <img align="right" src="docs/logo.png" width="350">
 
-cuFINUFFT is a very efficient GPU implementation of the 2- and 3-dimensional nonuniform FFT of types 1 and 2, in single and double precision, based on the CPU code [FINUFFT][1].
-
-We are at **version 1.2beta** (see [CHANGELOG](CHANGELOG)).
+cuFINUFFT is a very efficient GPU implementation of the 1-, 2-, and 3-dimensional nonuniform FFT of types 1 and 2, in single and double precision, based on the CPU code [FINUFFT][1].
 
 cuFINUFFT introduces several algorithmic innovations, including load-balancing, bin-sorting for cache-aware access, and use of fast shared memory.
 Our tests show an acceleration over FINUFFT of up to 10x on modern hardware,
-and up to 100x faster than other established GPU NUFFT codes.
-The transforms it performs may be summarized as follows: type 1 maps nonuniform data to a bi- or tri-variate Fourier series,
-whereas type 2 does the adjoint operation (which is not generally the inverse of type 1).
+and up to 100x faster than other established GPU NUFFT codes:
+
+<p align="center">
+<img src="docs/cufinufft_announce.png" width="550">
+</p>
+
+The linear transforms it can perform may be summarized as follows: type 1 maps nonuniform data (locations and corresponding strengths) to the uniformly spaced coefficients of a Fourier series (or its bi- or tri-variate generalization, according to dimension). Type 2 does the adjoint operation of type 1, ie maps in the reverse order.
+However, note that type 2 and type 1 are *not* generally each other's inverse,
+unlike for the FFT case!
 These transforms are performed to a user-presribed tolerance,
 at close-to-FFT speeds;
 under the hood, this involves detailed kernel design, custom spreading/interpolation stages, and plain FFTs performed by cuFFT.
 See the [documentation for FINUFFT][3] for a full mathematical description of the transforms and their applications to signal processing, imaging, and scientific computing.
 
+**Note**: We are currently in the process of adapting the cuFINUFFT interface to closer match that of FINUFFT. This will likely break code depending on the current interface once the next release is published. At this point we will publish a migration guide that will detail the exact changes to the interfaces.
+
 Main developer: **Yu-hsuan Melody Shih** (NYU). Main other contributors:
-Garrett Wright (Princeton), Joakim Andén (KTH/Flatiron), Johannes Blashcke (LBNL), Alex Barnett (Flatiron).
+Garrett Wright (Princeton), Joakim Andén (KTH/Flatiron), Johannes Blaschke (LBNL), Alex Barnett (Flatiron).
 See github for full list of contributors.
 This project came out of Melody's 2018 and 2019 summer internships at the Flatiron Institute, advised by CCM project leader Alex Barnett.
-
 
 ## Installation
 
 Note for most Python users, you may skip to the [Python Package](#Python-Package) section first,
-and consider installing from source if that solution is not adequate for your needs. Here's the C++ install process:
+and consider installing from source if that solution is not adequate for your needs. Note that 1D is not available in Python yet. Here's the C++ install process:
 
  - Make sure you have the prerequisites: a C++ compiler (eg `g++`) and a recent CUDA installation (`nvcc`).
  - Get the code: `git clone https://github.com/flatironinstitute/cufinufft.git`
@@ -110,7 +117,7 @@ General Python users, or Python software packages which would like to automatica
 depend on cufinufft using `setuptools` may use a precompiled binary distribution.
 This totally avoids installing from source and managing libraries for supported systems.
 
-Binary distributions are specific to both hardware and software. We currently provide binary wheels targeting Linux systems covered by `manylinux2010` for CUDA 10 and `manylinux2014` for CUDA 11 systems with compatible GPUS. These are currently the most common arrangements.  If you have such a system, you may run:
+Binary distributions are specific to both hardware and software. We currently provide binary wheels targeting Linux systems covered by `manylinux2010` for CUDA 10 forward with compatible GPUs.  If you have such a system, you may run:
 
 `pip install cufinufft`
 
@@ -139,12 +146,13 @@ make site=olcf_summit
 The currently supported targets and sites are:
 1. Sites
     1. NERSC Cori (`site=nersc_cori`)
-    2. NERSC Cori GPU (`site=nersc_cgpu`)
-    3. OLCF Summit (`site=olcf_summit`) -- automatically sets `target=power9`
-    4. CIMS (`target=CIMS`)
-2. Targets
+    1. NERSC Cori GPU (`site=nersc_cgpu`)
+    1. OLCF Summit (`site=olcf_summit`) -- automatically sets `target=power9`
+    1. CIMS (`site=CIMS`)
+    1. Flatiron Institute, rusty cluster GPU node (`site=FI`)
+1. Targets
     1. Default (`x86_64`) -- do not specify `target` variable
-    2. IBM `power9` (`target=power9`)
+    1. IBM `power9` (`target=power9`)
 
 A general note about expanding the platform support: _targets_ should contain
 settings that are specific to a compiler/hardware architecture, whereas _sites_
@@ -161,9 +169,27 @@ environment. The `site`-specific script is loaded __before__ the
  
 ### Other notes
  - If you are interested in optimizing for GPU Compute Capability,
- you may want to specicfy ```NVARCH=-arch=sm_XX``` in your make.inc to reduce compile times,
+ you may want to specify ```NVARCH=-arch=sm_XX``` in your make.inc to reduce compile times,
  or for other performance reasons. See [Matching SM Architectures][2].
+
+## Tasks for developers
+
+- 1D version is close to finished (needs vectorized testers and Py interfaces)
+- Type 3 transforms (which are quite tricky) as in [FINUFFT][1] are in progress (at least in 3D) on a PR, thanks to Simon Frasch; please go and test!
+- We need some more tutorial examples in C++ and Python
+- Please help us to write MATLAB (gpuArray) and Julia interfaces
+- There are various Tensorflow and related interfaces in progress (please help with them or test them): https://github.com/mrphys/tensorflow-nufft  https://github.com/dfm/jax-finufft
+- Please see Issues and PRs for other things you can help fix or test
+
+
+## References
+
+* cuFINUFFT: a load-balanced GPU library for general-purpose nonuniform FFTs,
+Yu-hsuan Shih, Garrett Wright, Joakim Andén, Johannes Blaschke, Alex H. Barnett,
+PDSEC2021 conference (*best paper prize*). https://arxiv.org/abs/2102.08463
+
 
 [1]: https://github.com/flatironinstitute/finufft
 [2]: http://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/
 [3]: https://finufft.readthedocs.io
+
