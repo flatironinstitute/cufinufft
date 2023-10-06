@@ -11,7 +11,7 @@ int setup_spreader(SPREAD_OPTS &opts,FLT eps, FLT upsampfac, int kerevalmeth)
 // Must call before any kernel evals done.
 // Returns: 0 success, 1, warning, >1 failure (see error codes in utils.h)
 {
-  if (upsampfac!=2.0) {   // nonstandard sigma
+  if (upsampfac!=2.0 && upsampfac!=1.25) {   // nonstandard sigma
     if (kerevalmeth==1) {
       fprintf(stderr,"setup_spreader: nonstandard upsampfac=%.3g cannot be handled by kerevalmeth=1\n",(double)upsampfac);
       return HORNER_WRONG_BETA;
