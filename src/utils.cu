@@ -3,6 +3,7 @@
 #include <thrust/extrema.h>
 #include <thrust/complex.h>
 #include <thrust/execution_policy.h>
+#include <thrust/extrema.h>
 
 #include <cuComplex.h>
 #include "memtransfer.h"
