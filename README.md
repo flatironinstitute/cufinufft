@@ -1,11 +1,10 @@
+PyPI package stats: ![PyPI - Downloads](https://img.shields.io/pypi/dm/cufinufft)
 
 $$\text{\color{red} \Huge LEGACY CODEBASE}$$
 
 **Note**: This repository holds the legacy cuFINUFFT codebase. Further development will take place in the [FINUFFT](https://www.github.com/flatironinstitute/finufft) repository. Please direct any issues or pull requests to that repository.
 
 # cuFINUFFT v1.3
-
-![PyPI - Downloads](https://img.shields.io/pypi/dm/cufinufft)
 
 <img align="right" src="docs/logo.png" width="350">
 
