@@ -5,6 +5,8 @@ $$\text{\color{red} \Huge LEGACY CODEBASE}$$
 
 # cuFINUFFT v1.3
 
+![PyPI - Downloads](https://img.shields.io/pypi/dm/cufinufft)
+
 <img align="right" src="docs/logo.png" width="350">
 
 cuFINUFFT is a very efficient GPU implementation of the 1-, 2-, and 3-dimensional nonuniform FFT of types 1 and 2, in single and double precision, based on the CPU code [FINUFFT][1].
