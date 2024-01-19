@@ -1,6 +1,8 @@
 #ifndef FINUFFT_UTILS_H
 #define FINUFFT_UTILS_H
 
+#include <cufinufft_eitherprec.h>
+
 #if !defined(__CUDA_ARCH__) || __CUDA_ARCH__ >= 600
 #else
 __inline__ __device__ double atomicAdd(double* address, double val)
@@ -22,5 +24,10 @@ __inline__ __device__ double atomicAdd(double* address, double val)
 	return __longlong_as_double(old);
 }
 #endif
+
+void arraywidcen_gpu(BIGINT n, FLT *a, FLT *w, FLT *c);
+
+void set_nhg_type3(FLT S, FLT X, cufinufft_opts opts, SPREAD_OPTS spopts,
+                   BIGINT *nf, FLT *h, FLT *gam);
 
 #endif

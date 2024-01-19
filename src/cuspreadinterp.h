@@ -295,7 +295,7 @@ int CUSPREAD1D(CUFINUFFT_PLAN d_plan, int blksize);
 int CUINTERP1D(CUFINUFFT_PLAN d_plan, int blksize);
 int CUSPREAD2D(CUFINUFFT_PLAN d_plan, int blksize);
 int CUINTERP2D(CUFINUFFT_PLAN d_plan, int blksize);
-int CUSPREAD3D(CUFINUFFT_PLAN d_plan, int blksize);
+int CUSPREAD3D(CUFINUFFT_PLAN d_plan, int blksize, CUCPX* d_c, CUCPX* d_fw);
 int CUINTERP3D(CUFINUFFT_PLAN d_plan, int blksize);
 
 // Wrappers for methods of spreading
@@ -316,15 +316,15 @@ int CUSPREAD2D_PAUL(int nf1, int nf2, int M, CUFINUFFT_PLAN d_plan,
 
 int CUSPREAD3D_NUPTSDRIVEN_PROP(int nf1, int nf2, int nf3, int M,
 	CUFINUFFT_PLAN d_plan);
-int CUSPREAD3D_NUPTSDRIVEN(int nf1, int nf2, int nf3, int M,
+int CUSPREAD3D_NUPTSDRIVEN(int nf1, int nf2, int nf3, CUCPX* d_c, int M, CUCPX* d_fw,
 	CUFINUFFT_PLAN d_plan, int blksize);
 int CUSPREAD3D_BLOCKGATHER_PROP(int nf1, int nf2, int nf3, int M,
 	CUFINUFFT_PLAN d_plan);
-int CUSPREAD3D_BLOCKGATHER(int nf1, int nf2, int nf3, int M,
+int CUSPREAD3D_BLOCKGATHER(int nf1, int nf2, int nf3, CUCPX* d_c, int M, CUCPX* d_fw,
 	CUFINUFFT_PLAN d_plan, int blksize);
 int CUSPREAD3D_SUBPROB_PROP(int nf1, int nf2, int nf3, int M,
 	CUFINUFFT_PLAN d_plan);
-int CUSPREAD3D_SUBPROB(int nf1, int nf2, int nf3, int M, CUFINUFFT_PLAN d_plan,
+int CUSPREAD3D_SUBPROB(int nf1, int nf2, int nf3, CUCPX* d_c, int M, CUCPX* d_fw, CUFINUFFT_PLAN d_plan,
 	int blksize);
 
 // Wrappers for methods of interpolation

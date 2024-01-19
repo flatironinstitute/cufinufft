@@ -41,6 +41,7 @@ typedef complex<double> dcomplex;  // slightly sneaky since duplicated by mwrap
 
 // ahb math helpers
 BIGINT next235beven(BIGINT n, BIGINT b);
+BIGINT next235even(BIGINT n);
 
 // jfm timer class
 #include <sys/time.h>

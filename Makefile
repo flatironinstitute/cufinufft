@@ -91,7 +91,7 @@ CUFINUFFTOBJS_64=src/1d/spreadinterp1d.o src/1d/cufinufft1d.o \
 	src/2d/spreadinterp2d.o src/2d/cufinufft2d.o \
 	src/2d/spread2d_wrapper.o src/2d/spread2d_wrapper_paul.o \
 	src/2d/interp2d_wrapper.o src/memtransfer_wrapper.o \
-	src/deconvolve_wrapper.o src/cufinufft.o src/common.o \
+	src/deconvolve_wrapper.o src/cufinufft.o src/utils.o src/common.o \
 	src/3d/spreadinterp3d.o src/3d/spread3d_wrapper.o \
 	src/3d/interp3d_wrapper.o src/3d/cufinufft3d.o \
 	$(CONTRIBOBJS)
@@ -131,8 +131,10 @@ libtest: lib $(BINDIR)/cufinufft2d1_test \
 	$(BINDIR)/cufinufft2d1nupts_test_32 \
 	$(BINDIR)/cufinufft3d1_test \
 	$(BINDIR)/cufinufft3d2_test \
+	$(BINDIR)/cufinufft3d3_test \
 	$(BINDIR)/cufinufft3d1_test_32 \
 	$(BINDIR)/cufinufft3d2_test_32 \
+	$(BINDIR)/cufinufft3d3_test_32 \
 	$(BINDIR)/cufinufft2d2api_test \
 	$(BINDIR)/cufinufft2d2api_test_32 \
 	$(BINDIR)/cufinufft1d1_test \
@@ -158,7 +160,8 @@ fserieskertest: $(BINDIR)/fseries_kernel_test \
 	$(BINDIR)/fseries_kernel_test_32
 
 examples: $(BINDIR)/example2d1many \
-	$(BINDIR)/example2d2many
+	$(BINDIR)/example2d2many \
+	$(BINDIR)/example3d3many
 
 $(BINDIR)/example%: examples/example%.cpp $(DYNAMICLIB) $(HEADERS)
 	mkdir -p $(BINDIR)
@@ -299,9 +302,11 @@ check3D_64: spreadtest libtest
 	bin/cufinufft3d1_test 1 16 16 16 4096 1e-3
 	bin/cufinufft3d1_test 4 15 15 15 2048 1e-3
 	bin/cufinufft3d2_test 1 16 16 16 4096 1e-3
+	bin/cufinufft3d3_test 1 2048 4096 1e-3
 	bin/cufinufft3d1_test 1 128 128 128
 	bin/cufinufft3d1_test 4 15 15 15
 	bin/cufinufft3d2_test 1 16 16 16
+	bin/cufinufft3d3_test 1 512 1024
 	bin/cufinufft3d1_test 1 64 64 64 1000
 	bin/cufinufft3d1_test 1 1e2 2e2 3e2 1e4
 	bin/cufinufft3d1_test 4 1e2 2e2 3e2 1e4
@@ -320,6 +325,7 @@ check3D_32: spreadtest libtest
 	bin/cufinufft3d1_test_32 4 15 15 15 2048 1e-3
 	bin/cufinufft3d2_test_32 1 16 16 16 4096 1e-3
 	bin/cufinufft3d2_test_32 2 16 16 16 8192 1e-3
+	bin/cufinufft3d3_test_32 1 2048 4096 1e-3
 	bin/cufinufft3d1_test_32 1 128 128 128
 	bin/cufinufft3d1_test_32 2 16 16 16
 	bin/cufinufft3d1_test_32 4 15 15 15
@@ -336,6 +342,7 @@ check3D_32: spreadtest libtest
 checkexamples: examples
 	$(BINDIR)/example2d1many
 	$(BINDIR)/example2d2many
+	$(BINDIR)/example3d3many
 # --------------------------------------------- end of check tasks ---------
 
 
